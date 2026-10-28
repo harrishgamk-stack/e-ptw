@@ -2,6 +2,14 @@
 
 Electronic Permit to Work & Safety Control System for Premier Centre Group.
 
+## Hosted demo
+
+Open [PCG ePTW](https://e-ptw-kappa.vercel.app) or go directly to [Sign & Verify](https://e-ptw-kappa.vercel.app/sign).
+
+Deployed on Vercel in demo mode. Permit changes and acknowledgement records stay in the browser; Supabase and authenticated signing remain disconnected. The live home, signing flow, record verification and receipt reload have been checked.
+
+Automatic GitHub deployments are not connected because the Vercel GitHub integration does not currently have access to `harrishgamk-stack/e-ptw`. Until that access is granted, deploy from the linked workspace with `vercel deploy --prod`.
+
 ## Run the local pilot
 
 ```powershell
