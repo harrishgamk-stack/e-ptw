@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
 import { validDraft } from "../fixtures";
+import { hseSession } from "./hse-session";
+test.beforeEach(async ({ page }) => {
+  await hseSession(page);
+});
 test("desktop dashboard, search, navigation and CSV export", async ({
   page,
 }) => {
@@ -10,7 +14,7 @@ test("desktop dashboard, search, navigation and CSV export", async ({
     page.getByRole("heading", { name: "Permit to Work Dashboard" }),
   ).toBeVisible();
   await expect(
-    page.getByText("Pilot workspace", { exact: true }),
+    page.getByText("Local workflow demo", { exact: true }),
   ).toBeVisible();
   await page.screenshot({
     path: "test-results/dashboard-desktop.png",
@@ -107,7 +111,6 @@ test("mobile dashboard and wizard stay within viewport", async ({ page }) => {
     ),
   ).toBe(true);
   await page.getByRole("button", { name: "Open navigation" }).click();
-  await page.getByText("More tools", { exact: true }).click();
   await expect(
     page.getByRole("link", { name: "Contractors", exact: true }),
   ).toBeVisible();

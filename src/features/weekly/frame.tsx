@@ -5,6 +5,8 @@ import { useWeekly } from "./store";
 import { dateLabel, initials } from "./model";
 export function WeeklyFrame({ children }: { children: React.ReactNode }) {
   const { actor, now, enabled, error, signOut } = useWeekly();
+  if (enabled && actor?.role === "HSE")
+    return <div className="weekly-app hse-permit-content">{children}</div>;
   return (
     <div className="weekly-app">
       <header className="weekly-header">

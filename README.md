@@ -8,6 +8,8 @@ Open [PCG ePTW](https://e-ptw-kappa.vercel.app) for the shared weekly permit wor
 
 Deployed on Vercel in demo mode. Permit changes and acknowledgement records stay in the browser; Supabase and authenticated signing remain disconnected. The everyday workspace uses name and demo IC; HSE has a separate review and monitoring view.
 
+HSE is the administrator. Signing in as HSE opens the full navy dashboard, with the permit register, approval queue, active work, safety monitoring, participant/company records, reports and audit. These screens at `/hse` use the same shared weekly permits as the simple workspace. Issuer, Requester and Holder see **My permit**, create/join controls and daily signing; they cannot open the HSE or earlier admin screens through the demo UI. This is demo role separation, not production access control.
+
 Automatic GitHub deployments are not connected because the Vercel GitHub integration does not currently have access to `harrishgamk-stack/e-ptw`. Until that access is granted, deploy from the linked workspace with `vercel deploy --prod`.
 
 ## Run the local pilot

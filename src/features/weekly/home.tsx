@@ -20,6 +20,7 @@ import {
 import { WeeklyFrame } from "./frame";
 import { WeeklyLogin } from "./login";
 import { useWeekly } from "./store";
+import { HseWorkspace } from "../hse/workspace";
 export function WeeklyStatus({ permit }: { permit: WeeklyPermit }) {
   const { now } = useWeekly();
   const status = effectiveWeeklyStatus(permit, now);
@@ -48,6 +49,7 @@ export function WeeklyHome() {
     [link, setLink] = useState(""),
     [error, setError] = useState("");
   const mine = actor ? state.permits.filter((p) => canRead(p, actor)) : [];
+  if (ready && actor?.role === "HSE") return <HseWorkspace />;
   return (
     <WeeklyFrame>
       {!ready ? (
@@ -58,20 +60,12 @@ export function WeeklyHome() {
         <>
           <div className="weekly-page-heading">
             <div>
-              <span className="weekly-eyebrow">
-                {actor.role === "HSE" ? "SAFETY DEPARTMENT" : "YOUR WORKSPACE"}
-              </span>
-              <h1>
-                {actor.role === "HSE"
-                  ? "Review once. Monitor each day."
-                  : "My permit"}
-              </h1>
+              <span className="weekly-eyebrow">YOUR WORKSPACE</span>
+              <h1>My permit</h1>
               <p>
                 {actor.role === "Holder"
                   ? "Open your permit and sign for today. The same QR works throughout its validity."
-                  : actor.role === "HSE"
-                    ? "Review signed permits, monitor daily attendance and stop unsafe work."
-                    : "Create a permit for the work period. Complete your section and share the QR."}
+                  : "Create a permit for the work period. Complete your section and share the QR."}
               </p>
             </div>
             {["Issuer", "Requester"].includes(actor.role) && (
@@ -81,42 +75,7 @@ export function WeeklyHome() {
               </Link>
             )}
           </div>
-          {actor.role === "HSE" && (
-            <div className="weekly-hse-counts">
-              <span>
-                <strong>
-                  {
-                    mine.filter(
-                      (p) => effectiveWeeklyStatus(p, now) === "HSE_REVIEW",
-                    ).length
-                  }
-                </strong>{" "}
-                ready for review
-              </span>
-              <span>
-                <strong>
-                  {
-                    mine.filter(
-                      (p) => effectiveWeeklyStatus(p, now) === "ACTIVE",
-                    ).length
-                  }
-                </strong>{" "}
-                active permits
-              </span>
-              <span>
-                <strong>
-                  {
-                    mine.filter(
-                      (p) =>
-                        effectiveWeeklyStatus(p, now) === "ACTIVE" &&
-                        !hasTodaySignature(p, now),
-                    ).length
-                  }
-                </strong>{" "}
-                awaiting today’s Holder signature
-              </span>
-            </div>
-          )}
+
           <div className="weekly-permits">
             {mine.map((p) => (
               <Link
@@ -172,9 +131,8 @@ export function WeeklyHome() {
                     : "Your permits will appear here"}
                 </h2>
                 <p>
-                  {actor.role === "HSE"
-                    ? "Permits arrive here after Requester, Issuer and Holder have all signed."
-                    : "You only see permits you created or joined. Ask the creator for the shared QR or link."}
+                  You only see permits you created or joined. Ask the creator
+                  for the shared QR or link.
                 </p>
               </div>
             )}
@@ -225,11 +183,6 @@ export function WeeklyHome() {
             Initial approval happens once. Daily Holder signatures never extend
             the permit or override a suspension.
           </p>
-          {actor.role === "HSE" && (
-            <Link className="weekly-legacy" href="/overview">
-              Earlier dashboard & reference tools →
-            </Link>
-          )}
         </>
       )}
     </WeeklyFrame>

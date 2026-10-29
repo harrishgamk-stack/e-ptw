@@ -1,6 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
+import { hseSession } from "./hse-session";
 const pageErrors = new WeakMap<Page, string[]>();
-test.beforeEach(({ page }) => {
+test.beforeEach(async ({ page }) => {
+  await hseSession(page);
   const errors: string[] = [];
   pageErrors.set(page, errors);
   page.on("pageerror", (error) => errors.push(error.message));
@@ -9,7 +11,7 @@ test.afterEach(({ page }) => {
   expect(pageErrors.get(page) ?? []).toEqual([]);
 });
 
-test("simple home provides the three main actions and hides advanced tools", async ({
+test("HSE retains access to earlier pilot tools with full admin navigation", async ({
   page,
 }) => {
   await page.goto("/legacy-home");
@@ -24,13 +26,12 @@ test("simple home provides the three main actions and hides advanced tools", asy
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Contractors", exact: true }),
-  ).toBeHidden();
+  ).toBeVisible();
   await page.screenshot({
     path: "test-results/simple-home-desktop.png",
     fullPage: true,
     caret: "initial",
   });
-  await page.getByText("More tools", { exact: true }).click();
   await expect(
     page.getByRole("link", { name: "Contractors", exact: true }),
   ).toBeVisible();

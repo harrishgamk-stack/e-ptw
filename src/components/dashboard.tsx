@@ -25,7 +25,7 @@ import {
 import { useStore } from "./store";
 import { PermitTable, permitStatus, time } from "./permit-table";
 import { SectionTitle, TypeIcon, Empty } from "./ui";
-import { Permit } from "@/lib/domain";
+import { AuditEvent, Permit } from "@/lib/domain";
 import { csvCell } from "@/lib/csv";
 export function exportCsv(permits: Permit[], demo = false) {
   const columns = [
@@ -65,8 +65,23 @@ export function exportCsv(permits: Permit[], demo = false) {
   a.click();
   URL.revokeObjectURL(url);
 }
-export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
-  const { permits, audit, demo } = useStore();
+export type DashboardSource = {
+  permits: Permit[];
+  audit: AuditEvent[];
+  now: Date;
+};
+export function Dashboard({
+  listOnly = false,
+  source,
+}: {
+  listOnly?: boolean;
+  source?: DashboardSource;
+}) {
+  const store = useStore();
+  const { permits, audit } = source ?? store;
+  const demo = source ? false : store.demo;
+  const detailBase = source ? "/work" : "/permits";
+  const adminBase = source ? "/hse" : "";
   const [tab, setTab] = useState("All permits"),
     [query, setQuery] = useState(""),
     [type, setType] = useState("All types"),
@@ -78,7 +93,8 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
       ["PENDING_APPROVAL", "UNDER_REVIEW", "SUBMITTED"].includes(p.status),
     ),
     suspended = permits.filter((p) => permitStatus(p, demo) === "SUSPENDED");
-  const now = demo ? new Date("2026-10-28T11:50:00+08:00") : new Date();
+  const now =
+    source?.now ?? (demo ? new Date("2026-10-28T11:50:00+08:00") : new Date());
   const expiring = active.filter(
     (p) => new Date(p.end).getTime() - now.getTime() < 4 * 3600000,
   );
@@ -182,10 +198,17 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
               <ArrowDownToLine size={16} />
               Export
             </button>
-            <Link href="/permits/new" className="button primary">
-              <Plus size={17} />
-              Create permit
-            </Link>
+            {source ? (
+              <Link href="/hse/approvals" className="button primary">
+                <ShieldCheck size={17} />
+                Review permits
+              </Link>
+            ) : (
+              <Link href="/permits/new" className="button primary">
+                <Plus size={17} />
+                Create permit
+              </Link>
+            )}
           </div>
         </div>
         <div className="date-line">
@@ -245,7 +268,7 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
                   actions and re-inspection before work resumes.
                 </p>
               </div>
-              <Link href={`/permits/${suspended[0].id}`}>
+              <Link href={`${detailBase}/${suspended[0].id}`}>
                 Review permit <ArrowRight size={15} />
               </Link>
             </div>
@@ -256,20 +279,34 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
                 title="Work across your site"
                 sub="Active work by permit category"
               >
-                <Link href="/active-work" className="text-link">
+                <Link href={`${adminBase}/active-work`} className="text-link">
                   View live board <ArrowUpRight size={14} />
                 </Link>
               </SectionTitle>
-              <div className="work-types">
-                {[
-                  "Hot Work",
-                  "Confined Space",
-                  "Working at height",
-                  "Electrical work",
-                  "Mechanical work",
-                ].map((t) => (
+              <div
+                className="work-types"
+                style={
+                  source
+                    ? {
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(80px, 1fr))",
+                        rowGap: 20,
+                      }
+                    : undefined
+                }
+              >
+                {Array.from(
+                  new Set([
+                    "Hot Work",
+                    "Confined Space",
+                    "Working at height",
+                    "Electrical work",
+                    "Mechanical work",
+                    ...(source ? active.map((p) => p.type) : []),
+                  ]),
+                ).map((t) => (
                   <Link
-                    href={`/active-work?type=${encodeURIComponent(t)}`}
+                    href={`${adminBase}/active-work?type=${encodeURIComponent(t)}`}
                     className="work-type"
                     key={t}
                   >
@@ -309,7 +346,7 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
               </SectionTitle>
               {pending.slice(0, 2).map((p) => (
                 <Link
-                  href={`/approvals/${p.id}`}
+                  href={`${source ? "/work" : "/approvals"}/${p.id}`}
                   key={p.id}
                   className="approval-preview-row"
                 >
@@ -326,7 +363,7 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
               {!pending.length && (
                 <p className="muted">Your approval queue is clear.</p>
               )}
-              <Link className="approval-footer" href="/approvals">
+              <Link className="approval-footer" href={`${adminBase}/approvals`}>
                 Open approval centre <ArrowRight size={14} />
               </Link>
             </section>
@@ -432,6 +469,8 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
         <PermitTable
           permits={filtered.slice((page - 1) * 6, page * 6)}
           demo={demo}
+          detailBase={detailBase}
+          now={now}
         />
         <div className="table-footer">
           <span>
@@ -475,14 +514,14 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
               title="Recent safety activity"
               sub="The latest actions across your workspace"
             >
-              <Link className="text-link" href="/audit">
+              <Link className="text-link" href={`${adminBase}/audit`}>
                 View audit log <ArrowUpRight size={14} />
               </Link>
             </SectionTitle>
             <div className="activity-list">
               {audit.slice(0, 3).map((a, i) => (
                 <Link
-                  href={`/permits/${a.permitId}`}
+                  href={`${detailBase}/${a.permitId}`}
                   className="activity-row"
                   key={a.id}
                 >
@@ -519,7 +558,7 @@ export function Dashboard({ listOnly = false }: { listOnly?: boolean }) {
               .map((p) => (
                 <Link
                   key={p.id}
-                  href={`/permits/${p.id}`}
+                  href={`${detailBase}/${p.id}`}
                   className="expiry-row"
                 >
                   <div>

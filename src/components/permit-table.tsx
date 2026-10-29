@@ -3,12 +3,12 @@ import Link from "next/link";
 import { ArrowUpRight, ArrowDown, MoreHorizontal } from "lucide-react";
 import { Permit, effectiveStatus } from "@/lib/domain";
 import { Badge, Risk, TypeIcon, Empty } from "./ui";
-export function permitStatus(p: Permit, demo: boolean) {
+export function permitStatus(p: Permit, demo: boolean, now = new Date()) {
   return effectiveStatus(
     p,
     demo && p.id.startsWith("demo-")
       ? new Date("2026-10-28T11:50:00+08:00")
-      : new Date(),
+      : now,
   );
 }
 export const time = (value: string) =>
@@ -23,9 +23,13 @@ export const time = (value: string) =>
 export function PermitTable({
   permits,
   demo,
+  detailBase = "/permits",
+  now,
 }: {
   permits: Permit[];
   demo: boolean;
+  detailBase?: string;
+  now?: Date;
 }) {
   if (!permits.length)
     return (
@@ -73,7 +77,7 @@ export function PermitTable({
                 />
               </td>
               <td>
-                <Link href={`/permits/${p.id}`} className="permit-cell">
+                <Link href={`${detailBase}/${p.id}`} className="permit-cell">
                   <TypeIcon type={p.type} />
                   <div>
                     <strong>
@@ -92,6 +96,21 @@ export function PermitTable({
               </td>
               <td>
                 <div className="two-lines">
+                  {detailBase === "/work" && (
+                    <span>
+                      {new Date(p.start).toLocaleDateString("en-MY", {
+                        day: "numeric",
+                        month: "short",
+                        timeZone: "Asia/Kuala_Lumpur",
+                      })}{" "}
+                      –{" "}
+                      {new Date(p.end).toLocaleDateString("en-MY", {
+                        day: "numeric",
+                        month: "short",
+                        timeZone: "Asia/Kuala_Lumpur",
+                      })}
+                    </span>
+                  )}
                   <strong>
                     {time(p.start)} <span className="time-dash">—</span>{" "}
                     {time(p.end)}
@@ -103,12 +122,12 @@ export function PermitTable({
                 <Risk risk={p.risk} />
               </td>
               <td>
-                <Badge status={permitStatus(p, demo)} />
+                <Badge status={permitStatus(p, demo, now)} />
               </td>
               <td>
                 <Link
                   className="row-action"
-                  href={`/permits/${p.id}`}
+                  href={`${detailBase}/${p.id}`}
                   aria-label={`View ${p.number}`}
                 >
                   <MoreHorizontal size={19} />

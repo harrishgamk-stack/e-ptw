@@ -27,6 +27,9 @@ import {
 } from "lucide-react";
 import { useStore } from "./store";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { useWeekly } from "@/features/weekly/store";
+import { HseShell } from "@/features/hse/shell";
+import { HseAccess } from "@/features/hse/workspace";
 const nav = [
   { label: "Home", href: "/", icon: LayoutDashboard },
   { label: "Permits", href: "/permits", icon: Files },
@@ -42,6 +45,26 @@ const nav = [
   { label: "Audit Logs", href: "/audit", icon: ScrollText },
 ];
 export function Shell({ children }: { children: React.ReactNode }) {
+  const { enabled, ready, actor } = useWeekly();
+  const pathname = usePathname();
+  const publicPage =
+    pathname.startsWith("/verify") ||
+    pathname.startsWith("/signatures/") ||
+    pathname.startsWith("/staff-login");
+  const simplePage =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/new-permit" ||
+    pathname.startsWith("/work/") ||
+    pathname.startsWith("/join/");
+  if (enabled && publicPage) return children;
+  if (enabled && !publicPage) {
+    if (ready && actor?.role === "HSE") return <HseShell>{children}</HseShell>;
+    if (!simplePage) return <HseAccess>{children}</HseAccess>;
+  }
+  return <LegacyShell>{children}</LegacyShell>;
+}
+function LegacyShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname(),
     router = useRouter();
   const { demo, audit, permits, loadError, refresh } = useStore();
