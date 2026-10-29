@@ -15,6 +15,7 @@ test("desktop dashboard, search, navigation and CSV export", async ({
   await page.screenshot({
     path: "test-results/dashboard-desktop.png",
     fullPage: true,
+    caret: "initial",
   });
   await page.getByLabel("Search permit register").fill("Conveyor");
   await expect(page.locator(".permit-table tbody tr")).toHaveCount(1);
@@ -86,17 +87,19 @@ test("mobile dashboard and wizard stay within viewport", async ({ page }) => {
   await page.screenshot({
     path: "test-results/dashboard-mobile.png",
     fullPage: true,
+    caret: "initial",
   });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("link", { name: "Create", exact: true }).click();
-  await expect(page.getByLabel("What work is planned?")).toBeVisible();
+  await page.goto("/permits/new");
+  await expect(page.getByLabel("Work title")).toBeVisible();
   await page.screenshot({
     path: "test-results/wizard-mobile.png",
     fullPage: true,
+    caret: "initial",
   });
   expect(
     await page.evaluate(

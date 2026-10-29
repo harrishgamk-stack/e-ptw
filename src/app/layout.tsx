@@ -5,6 +5,8 @@ import { StoreProvider } from "@/components/store";
 import { Shell } from "@/components/shell";
 import { isConfigured } from "@/lib/supabase/server";
 import { Pwa } from "@/components/pwa";
+import { WeeklyProvider } from "@/features/weekly/store";
+import "./weekly.css";
 export const metadata: Metadata = {
   title: "PCG ePTW | Safety workspace",
   description:
@@ -26,8 +28,10 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <StoreProvider demo={!isConfigured()}>
-          <Pwa />
-          <Shell>{children}</Shell>
+          <WeeklyProvider enabled={!isConfigured()}>
+            <Pwa />
+            <Shell>{children}</Shell>
+          </WeeklyProvider>
         </StoreProvider>
       </body>
     </html>

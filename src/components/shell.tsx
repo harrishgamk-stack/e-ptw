@@ -66,7 +66,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
     window.addEventListener("keydown", key);
     return () => window.removeEventListener("keydown", key);
   }, []);
-  if (pathname.startsWith("/login") || pathname.startsWith("/verify"))
+  if (
+    pathname === "/" ||
+    pathname === "/new-permit" ||
+    pathname.startsWith("/work/") ||
+    pathname.startsWith("/join/") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/verify") ||
+    pathname.startsWith("/staff-login")
+  )
     return children;
   const results = search
     ? permits.filter((p) =>

@@ -4,9 +4,9 @@ Electronic Permit to Work & Safety Control System for Premier Centre Group.
 
 ## Hosted demo
 
-Open [PCG ePTW](https://e-ptw-kappa.vercel.app) or go directly to [Sign & Verify](https://e-ptw-kappa.vercel.app/sign).
+Open [PCG ePTW](https://e-ptw-kappa.vercel.app) for the shared weekly permit workflow.
 
-Deployed on Vercel in demo mode. Permit changes and acknowledgement records stay in the browser; Supabase and authenticated signing remain disconnected. The live home, signing flow, record verification and receipt reload have been checked.
+Deployed on Vercel in demo mode. Permit changes and acknowledgement records stay in the browser; Supabase and authenticated signing remain disconnected. The everyday workspace uses name and demo IC; HSE has a separate review and monitoring view.
 
 Automatic GitHub deployments are not connected because the Vercel GitHub integration does not currently have access to `harrishgamk-stack/e-ptw`. Until that access is granted, deploy from the linked workspace with `vercel deploy --prod`.
 
@@ -17,11 +17,26 @@ npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). No credentials are needed for the explicitly labeled local demo. Its account is simulated; changes persist in browser local storage. Sample permits use an explicit **28 October 2026, 11:50 MYT** snapshot. Newly created permits use their actual validity. Use Settings → Reset local demo to restore sample records. Demo document uploads retain metadata only.
+Open [http://localhost:3000](http://localhost:3000). Use a sample person or enter a name, a 12-digit **demo IC**, and a demo role on first visit. Returning users enter the same name and IC to see their permits. The profile remembers its role; a different role selection does not change an existing profile. Full IC numbers are not persisted; the demo stores a hash and the last four digits. This is not identity authentication. Use sample identities only.
 
-## Simple mode and digital acknowledgement
+## Shared weekly workflow
 
-The default home now has three actions: **Create permit → Review & sign → Check a signature record**. A short form at `/new-permit` creates a draft from basic work details. The full safety form and operational tools remain available under **More tools**; the detailed dashboard is at `/overview`.
+1. **Issuer or Requester creates** a permit with a work title, location and validity of up to seven calendar days. Its random QR/link remains the same for the whole period.
+2. **Requester, Issuer and Holder join** through that QR. Each person completes only their own section. Saves in different sections merge; stale saves to the same section are rejected rather than overwriting another tab's changes.
+3. **All three review and sign** the same completed revision. The Requester records scope and risks, the Issuer records site/specialist controls, and the Holder records the team and accepts the conditions. All sections must be complete before signing. Changes require renewed signatures while retaining the earlier evidence.
+4. **HSE reviews and signs once.** Only the HSE demo role can activate the fully signed permit. A future-dated approved permit remains scheduled until its validity starts.
+5. **The Holder signs for each work day.** Reopening the same QR or signing in with name and demo IC opens the existing permit. Daily signatures are separate from initial approval, use Malaysia dates, and are idempotent for that work day. A same-day initial Holder signature covers day one after HSE activation; if it was signed on another day or before validity, a fresh daily sign-in is required. Day two does not create another HSE approval.
+6. **HSE monitors the period.** HSE sees daily attendance, site checks, gas checks and stop-work events. Failed monitoring suspends active work. Expiry, suspension, changed scope and stale required gas checks block work/sign-in as applicable. Resumption requires HSE corrective-action/re-inspection confirmation and a fresh Holder sign-in. Scope changes return the permit for all three signatures and another HSE review.
+
+To try simultaneous filling, open the QR link in **separate tabs of the same browser**, then use a different sample person in each tab. Browser Web Locks serialize mutations and storage events synchronize the tabs. Each tab has its own demo session. The local workflow uses a separate `pcg-weekly-v2` store and preserves the earlier pilot data.
+
+**Separate phones/browsers are not connected in this version**, as requested. The QR page explains this rather than pretending a local record is shared online. Live phone collaboration needs shared persistence, database-enforced ownership and approvals, authenticated staff roles, transactional revision checks, secure invitation tokens and a daily-attendance uniqueness constraint. Name and IC can identify an enrolled person but cannot serve as proof of identity or authority. This new workflow is disabled when the application is configured for the earlier connected backend, until that backend is adapted and tested.
+
+Implementation: `src/features/weekly/model.ts` defines the local records and Malaysia date rules; `engine.ts` enforces the workflow; `store.tsx` provides serialized local persistence. The role-specific screens live alongside these files. Tests cover four cooperating tabs, initial HSE activation, later-day sign-in without reapproval, role isolation, stale writes, retained history, gas checks and expired/suspended QR behavior.
+
+## Earlier pilot tools
+
+The earlier single-browser signing demonstration remains at `/legacy-home`, with its short draft form at `/legacy-new-permit`, full safety form at `/permits/new`, and detailed dashboard at `/overview`. Its sample permits use an explicit **28 October 2026, 11:50 MYT** snapshot. Settings can reset those earlier sample records. These older tools are separate from the shared weekly workflow; they do not activate or approve its permits.
 
 At `/sign`, choose a permit, open its summary, enter your name and role, type the same name to sign, and confirm the acknowledgement. The resulting receipt records the name, role, timestamp in MYT, permit snapshot, unique reference and SHA-256 checksums. Its verification page flags modified receipts and later permit changes. You can look up an `ACK-…` reference, open the local link, use its QR, or print/save the receipt as PDF. Signing adds an audit event and never changes or approves the permit status.
 
@@ -98,10 +113,9 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
-# With npm run dev running separately:
 npx playwright test
 ```
 
-Browser tests use the installed Windows Chrome by default. Set `PLAYWRIGHT_CHROME_PATH` to another Chrome executable when needed. Screenshots are written to `test-results/` (ignored by Git).
+Browser tests start or reuse the local development server and use the installed Windows Chrome by default. Set `PLAYWRIGHT_CHROME_PATH` to another Chrome executable when needed. Screenshots are written to `test-results/` (ignored by Git).
 
 Safety tests cover rejected direct writes, row isolation, invalid state transitions, incomplete submissions, numbering uniqueness, immutable audit history, expired public verification and demo critical-control gates. These tests do not replace Supabase integration testing or PCG HSE approval.

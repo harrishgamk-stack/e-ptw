@@ -12,7 +12,7 @@ test.afterEach(({ page }) => {
 test("simple home provides the three main actions and hides advanced tools", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/legacy-home");
   await expect(
     page.getByRole("heading", { name: "Your permits. One simple place." }),
   ).toBeVisible();
@@ -28,6 +28,7 @@ test("simple home provides the three main actions and hides advanced tools", asy
   await page.screenshot({
     path: "test-results/simple-home-desktop.png",
     fullPage: true,
+    caret: "initial",
   });
   await page.getByText("More tools", { exact: true }).click();
   await expect(
@@ -38,7 +39,7 @@ test("simple home provides the three main actions and hides advanced tools", asy
 test("quick creation produces a draft without bypassing safety submission", async ({
   page,
 }) => {
-  await page.goto("/new-permit");
+  await page.goto("/legacy-new-permit");
   await page.getByLabel("What work is planned?").fill("Inspect warehouse fan");
   await page.getByLabel("Work location").fill("Warehouse A");
   await page.getByLabel("Permit holder").fill("Ahmad Firdaus");
@@ -74,6 +75,7 @@ test("typed signing creates a persistent checkable record without changing permi
   await page.screenshot({
     path: "test-results/sign-form-desktop.png",
     fullPage: true,
+    caret: "initial",
   });
   await page
     .getByRole("button", { name: "Sign acknowledgement", exact: true })
@@ -97,6 +99,7 @@ test("typed signing creates a persistent checkable record without changing permi
   await page.screenshot({
     path: "test-results/signature-receipt-desktop.png",
     fullPage: true,
+    caret: "initial",
   });
   await page.getByRole("link", { name: "Back to Sign & Verify" }).click();
   await page.getByLabel("Acknowledgement reference or link").fill(
@@ -132,7 +135,7 @@ test("typed signing creates a persistent checkable record without changing permi
 
 test("mobile signing and the simple home fit the screen", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/legacy-home");
   await expect(
     page.getByRole("heading", { name: "Your permits. One simple place." }),
   ).toBeVisible();
@@ -144,6 +147,7 @@ test("mobile signing and the simple home fit the screen", async ({ page }) => {
   await page.screenshot({
     path: "test-results/simple-home-mobile.png",
     fullPage: true,
+    caret: "initial",
   });
   await page.goto("/sign?permit=demo-124");
   await expect(page.getByLabel(/^Your full name/)).toBeVisible();
@@ -155,5 +159,6 @@ test("mobile signing and the simple home fit the screen", async ({ page }) => {
   await page.screenshot({
     path: "test-results/sign-form-mobile.png",
     fullPage: true,
+    caret: "initial",
   });
 });

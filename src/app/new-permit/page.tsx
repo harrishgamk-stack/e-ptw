@@ -1,4 +1,4 @@
-import { QuickPermit } from "@/components/quick-permit";
+import { CreateWeekly } from "@/features/weekly/create";
 export default function Page() {
-  return <QuickPermit />;
+  return <CreateWeekly />;
 }
