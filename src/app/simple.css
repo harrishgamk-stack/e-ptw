@@ -15,7 +15,7 @@
 .simple-heading p {
   font-size: 14px;
   line-height: 1.8;
-  color: #8190a4;
+  color: #869f9c;
   margin-top: 10px;
 }
 .simple-heading .eyebrow {
@@ -34,27 +34,27 @@
   gap: 14px;
   padding: 24px 19px;
   background: white;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e4eeed;
   border-radius: 11px;
 }
 .simple-start > a:hover {
-  border-color: #99bce5;
-  background: #fcfdff;
+  border-color: #a4dad4;
+  background: #fcfffe;
 }
 .simple-start > a > svg {
   margin-left: auto;
-  color: #9bacc0;
+  color: #a0bbb8;
   width: 16px;
 }
 .simple-step-icon {
-  color: #4182d0;
+  color: var(--brand-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 46px;
   height: 46px;
   border-radius: 12px;
-  background: #edf4fd;
+  background: #effbf9;
   flex-shrink: 0;
 }
 .simple-start > a:nth-child(2) .simple-step-icon {
@@ -67,7 +67,7 @@
 }
 .simple-start a div > span {
   font-size: 10px;
-  color: #98a6b7;
+  color: #9cb3b0;
 }
 .simple-start h2 {
   font-size: 15px;
@@ -75,7 +75,7 @@
 }
 .simple-start p {
   font-size: 11px;
-  color: #8e9aab;
+  color: #92a7a5;
   line-height: 1.7;
 }
 .simple-section-heading {
@@ -90,7 +90,7 @@
 }
 .simple-section-heading p {
   font-size: 12px;
-  color: #8f9cad;
+  color: #93a9a6;
   margin-top: 6px;
 }
 .simple-workspace .button {
@@ -107,19 +107,19 @@
   align-items: center;
   gap: 10px;
   padding: 0 24px 20px;
-  color: #9aabbd;
+  color: #9fb8b5;
 }
 .simple-search input {
   width: 100%;
   font-size: 13px;
-  background: #fbfcfe;
+  background: #fbfefd;
 }
 .simple-permit-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 22px 24px;
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid #eef4f3;
   gap: 20px;
 }
 .simple-permit-meta {
@@ -130,7 +130,7 @@
 }
 .simple-permit-meta > a {
   font-size: 11px;
-  color: #8c9fb5;
+  color: #92afac;
 }
 .simple-permit-row h3 {
   font-size: 15px;
@@ -143,7 +143,7 @@
   gap: 18px;
   flex-wrap: wrap;
   font-size: 12px;
-  color: #8c9aae;
+  color: #91a9a6;
   margin-top: 10px;
 }
 .simple-permit-row p span {
@@ -160,7 +160,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #8a9ab0;
+  color: #8faba7;
   margin: 24px 2px;
 }
 .simple-bottom-note p {
@@ -173,7 +173,7 @@
   gap: 6px;
   align-items: center;
   font-size: 11px;
-  color: #5b85b4;
+  color: #67a8a0;
   white-space: nowrap;
 }
 .simple-form {
@@ -190,7 +190,7 @@
 }
 .simple-form-footer {
   margin-top: 28px;
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid #eef4f3;
   padding-top: 20px;
   display: flex;
   justify-content: space-between;
@@ -199,7 +199,7 @@
 }
 .simple-form-footer p {
   font-size: 12px;
-  color: #8c9aab;
+  color: #90a7a4;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -208,7 +208,7 @@
   display: inline-flex;
   margin-top: 20px;
   font-size: 12px;
-  color: #668dbd;
+  color: #72b1aa;
   line-height: 1.6;
 }
 .more-tools {
@@ -222,7 +222,7 @@
   justify-content: space-between;
   padding: 16px 13px;
   font-size: 12px;
-  color: #9eafc2;
+  color: #a3bdba;
   cursor: pointer;
   list-style: none;
 }
@@ -254,8 +254,8 @@
   height: 26px;
   width: 26px;
   border-radius: 50%;
-  background: #edf4fc;
-  color: #5b88ba;
+  background: #effaf9;
+  color: #68ada5;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -266,10 +266,10 @@
 }
 .sign-summary {
   margin: 20px 0 28px;
-  border: 1px solid #e2e9f2;
+  border: 1px solid #e4f0ee;
   border-radius: 9px;
   padding: 17px;
-  background: #fafcfe;
+  background: #fbfdfd;
 }
 .sign-summary > div {
   display: flex;
@@ -284,12 +284,12 @@
 }
 .sign-summary p {
   font-size: 12px;
-  color: #8595aa;
+  color: #8aa5a2;
   margin-top: 10px;
 }
 .sign-summary details {
   margin-top: 15px;
-  border-top: 1px solid #e6edf5;
+  border-top: 1px solid #e8f3f2;
   padding-top: 13px;
 }
 .sign-summary summary {
@@ -298,7 +298,7 @@
   gap: 10px;
   cursor: pointer;
   font-size: 13px;
-  color: #5a86bb;
+  color: #68ada5;
   list-style: none;
 }
 .sign-summary details[open] summary {
@@ -317,13 +317,13 @@
   font-family: "Segoe Script", "Brush Script MT", cursive;
   font-size: 32px;
   font-weight: 400;
-  color: #22446a;
+  color: #2c605a;
   overflow-wrap: anywhere;
   padding: 20px 0;
   line-height: 1.8;
 }
 .typed-signature .signature-preview {
-  border-bottom: 1px solid #d8e3f0;
+  border-bottom: 1px solid #dbedeb;
   min-height: 80px;
 }
 .sign-declaration {
@@ -343,7 +343,7 @@
 .sign-demo-note {
   font-size: 11px;
   line-height: 1.8;
-  color: #96a3b3;
+  color: #9aafad;
   margin-top: 16px;
   display: flex;
   align-items: center;
@@ -366,7 +366,7 @@
 }
 .sign-explainer > p {
   font-size: 12px;
-  color: #8b9aaf;
+  color: #90aaa7;
   margin: 12px 0 20px;
   line-height: 1.9;
 }
@@ -375,7 +375,7 @@
   align-items: flex-start;
   gap: 9px;
   font-size: 12px;
-  color: #7d8fa6;
+  color: #83a09d;
   margin: 18px 0;
   line-height: 1.7;
 }
@@ -387,32 +387,32 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #f3f7fd;
+  background: #f4fcfb;
   border-radius: 8px;
   padding: 14px;
   margin-top: 23px;
 }
 .sign-explainer-note p {
   font-size: 11px;
-  color: #8497af;
+  color: #8aa9a5;
   line-height: 1.8;
 }
 .sign-explainer-note svg {
-  color: #759ac3 !important;
+  color: #80b8b2 !important;
 }
 .signature-list-row {
   display: flex;
   gap: 10px;
   align-items: center;
   padding: 17px 0;
-  border-bottom: 1px solid #edf1f6;
+  border-bottom: 1px solid #eef5f4;
 }
 .signature-list-row > svg:first-child {
   color: #80a494;
 }
 .signature-list-row > svg:last-child {
   margin-left: auto;
-  color: #9aabbe;
+  color: #9fb9b6;
 }
 .signature-list-row strong {
   font-size: 12px;
@@ -421,7 +421,7 @@
 .signature-list-row small {
   display: block;
   font-size: 10px;
-  color: #97a5b6;
+  color: #9bb2af;
   margin-top: 5px;
 }
 .receipt-finder {
@@ -479,12 +479,12 @@
   display: flex;
   justify-content: space-between;
   font-size: 10px;
-  color: #94a2b3;
+  color: #98afac;
   letter-spacing: 0.7px;
 }
 .receipt-reference > span:last-child {
   font-size: 8px;
-  background: #f1f4f8;
+  background: #f2f7f6;
   padding: 4px 7px;
   border-radius: 4px;
   letter-spacing: 0.7px;
@@ -495,7 +495,7 @@
 }
 .signed-by > span {
   font-size: 11px;
-  color: #99a7b8;
+  color: #9db4b1;
 }
 .signed-by h2 {
   font-size: 23px;
@@ -504,15 +504,15 @@
 }
 .signed-by p {
   font-size: 12px;
-  color: #8696a9;
+  color: #8ba4a1;
 }
 .signed-by .signature-preview {
   font-size: 36px;
   padding-bottom: 0;
-  color: #294d72;
+  color: #336862;
 }
 .receipt-body .info-grid {
-  border-top: 1px solid #e9edf3;
+  border-top: 1px solid #eaf2f1;
   padding-top: 25px;
 }
 .receipt-body .info-grid dt {
@@ -523,12 +523,12 @@
 }
 .receipt-statement {
   margin: 25px 0;
-  background: #f8fafc;
-  border: 1px solid #e7edf4;
+  background: #f9fbfb;
+  border: 1px solid #e9f2f1;
   border-radius: 8px;
   padding: 17px;
   font-size: 12px;
-  color: #8092a8;
+  color: #86a29f;
   line-height: 1.9;
 }
 .receipt-check {
@@ -554,7 +554,7 @@
 }
 .receipt-check p {
   font-size: 12px;
-  color: #8b9caf;
+  color: #90aaa7;
   line-height: 1.8;
   margin-top: 6px;
 }
@@ -567,13 +567,13 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 16px 0;
-  border-block: 1px solid #ebeff4;
+  border-block: 1px solid #ecf3f2;
   font-size: 11px;
-  color: #8e9eb1;
+  color: #93aca9;
 }
 .receipt-current-status > a {
   margin-left: auto;
-  color: #688dbb;
+  color: #74afa8;
 }
 .receipt-qr-row {
   display: flex;
@@ -586,7 +586,7 @@
 }
 .receipt-qr-row p {
   font-size: 11px;
-  color: #98a5b5;
+  color: #9cb1af;
   margin: 7px 0 10px;
   line-height: 1.8;
 }
@@ -595,9 +595,9 @@
 }
 .receipt-technical {
   font-size: 11px;
-  color: #98a7b9;
+  color: #9db4b2;
   padding: 15px 0;
-  border-top: 1px solid #edf1f6;
+  border-top: 1px solid #eef5f4;
   line-height: 1.8;
 }
 .receipt-technical summary {
@@ -607,7 +607,7 @@
   font-size: 10px;
   overflow-wrap: anywhere;
   display: block;
-  background: #f7f9fc;
+  background: #f8fbfb;
   padding: 10px;
   margin: 9px 0;
 }
@@ -868,7 +868,7 @@
     align-items: center;
     gap: 5px;
     font-size: 8px;
-    color: #8093aa;
+    color: #86a4a1;
     min-width: 46px;
     padding: 0;
   }

@@ -30,6 +30,7 @@ import { supabaseBrowser } from "@/lib/supabase/client";
 import { useWeekly } from "@/features/weekly/store";
 import { HseShell } from "@/features/hse/shell";
 import { HseAccess } from "@/features/hse/workspace";
+import { CompanyBrand } from "./company-brand";
 const nav = [
   { label: "Home", href: "/", icon: LayoutDashboard },
   { label: "Permits", href: "/permits", icon: Files },
@@ -115,12 +116,7 @@ function LegacyShell({ children }: { children: React.ReactNode }) {
       )}
       <aside className={`sidebar ${mobile ? "open" : ""}`}>
         <Link href="/" className="brand">
-          <span className="brand-symbol">
-            P<span>C</span>G
-          </span>
-          <span className="brand-text">
-            ePTW<small>PREMIER CENTRE GROUP</small>
-          </span>
+          <CompanyBrand />
         </Link>
         <div className="workspace-label">
           WORKSPACE <PanelLeftClose size={15} />

@@ -6,10 +6,15 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Electronic Permit to Work & Safety Control System",
     start_url: "/",
     display: "standalone",
-    background_color: "#f6f8fb",
-    theme_color: "#11263d",
+    background_color: "#f5f8f6",
+    theme_color: "#004e46",
     icons: [
-      { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
+      {
+        src: "/brand/pcg-icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
     ],
   };
 }

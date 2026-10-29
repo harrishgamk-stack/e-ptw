@@ -2,6 +2,8 @@
 
 Electronic Permit to Work & Safety Control System for Premier Centre Group.
 
+The interface uses the official logo and green/teal theme from [Premier Centre Group](https://pcgroup.com.my/), with a self-hosted Rubik typeface. Original artwork sources and palette values are recorded in `public/brand/README.md`; the font license is in `src/app/fonts/OFL.txt`.
+
 ## Hosted demo
 
 Open [PCG ePTW](https://e-ptw-kappa.vercel.app) for the shared weekly permit workflow.

@@ -1,0 +1,202 @@
+/* Company palette and original artwork from https://pcgroup.com.my/. */
+.company-brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+.company-logo {
+  display: block;
+  flex-shrink: 0;
+}
+.company-logo img {
+  display: block;
+  width: 164px;
+  height: auto;
+}
+.company-product {
+  display: block;
+  color: var(--brand-primary);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.7px;
+  padding-left: 18px;
+  border-left: 1px solid var(--border);
+  line-height: 1.2;
+}
+.company-product small {
+  display: block;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 1.4px;
+  margin-top: 6px;
+  white-space: nowrap;
+}
+.sidebar .brand {
+  height: auto;
+  min-height: 136px;
+  padding: 18px 8px;
+}
+.sidebar .company-brand {
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+.sidebar .company-logo {
+  background: #fff;
+  border-radius: 6px;
+  padding: 9px 12px;
+}
+.sidebar .company-logo img {
+  width: 100%;
+  max-width: 164px;
+  margin: auto;
+}
+.sidebar .company-product {
+  color: #fff;
+  font-size: 18px;
+  border: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sidebar .company-product small {
+  color: var(--brand-mint);
+  font-size: 8px;
+  letter-spacing: 1px;
+  margin: 0;
+}
+.sidebar .workspace-label {
+  color: var(--brand-mint);
+}
+.sidebar .nav-item {
+  color: #d2e6e1;
+}
+.sidebar .nav-item svg {
+  color: var(--brand-mint);
+}
+.sidebar .nav-item.selected {
+  background: #ffffff1c;
+  box-shadow: inset 3px 0 0 var(--brand-mint);
+  color: #fff;
+}
+.sidebar .nav-item.selected svg {
+  color: #fff;
+}
+.sidebar .nav-item:hover {
+  background: #ffffff12;
+}
+.sidebar .profile small {
+  color: var(--brand-mint);
+}
+.sidebar .profile button {
+  color: #d2e6e1;
+}
+.sidebar .site-select small {
+  color: var(--brand-mint);
+}
+.weekly-brand > .company-brand {
+  border: 0;
+  padding: 0;
+  letter-spacing: normal;
+}
+.weekly-brand .company-logo img {
+  width: 148px;
+}
+.weekly-app {
+  background: var(--bg);
+  color: var(--ink);
+}
+.weekly-app.hse-permit-content {
+  background: transparent;
+}
+.weekly-demo,
+.demo-strip {
+  background: #f3eeeb;
+  border-bottom: 1px solid #e5d9d2;
+  color: #6e655f;
+}
+.weekly-demo > span,
+.demo-strip > span:first-child {
+  color: #665c55;
+}
+.weekly-demo i,
+.demo-strip i {
+  background: var(--brand-sand);
+}
+.weekly-login-message h1 {
+  color: var(--brand-primary);
+}
+.weekly-login-message h1 em {
+  color: #43857e;
+}
+.weekly-login-message > p,
+.weekly-login-message > div {
+  color: #617d75;
+}
+.weekly-eyebrow,
+.eyebrow {
+  color: #617d75;
+}
+.weekly-button.primary,
+.button.primary {
+  background: var(--brand-primary);
+  box-shadow: 0 2px 4px #004e4614;
+}
+.weekly-button.primary:hover,
+.button.primary:hover {
+  background: var(--brand-primary-hover);
+}
+.weekly-form-icon {
+  background: #e5f0ec;
+  color: var(--brand-primary);
+}
+.weekly-avatar {
+  background: #deeee8;
+  color: var(--brand-primary);
+}
+.weekly-app .field input:focus,
+.weekly-app .field select:focus,
+.weekly-app .field textarea:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--brand-teal);
+  box-shadow: 0 0 0 3px #004e4612;
+}
+button:focus-visible,
+a:focus-visible {
+  outline-color: var(--brand-teal);
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--brand-primary);
+}
+.login-brand-panel .company-logo {
+  background: #fff;
+  padding: 14px 18px;
+  border-radius: 6px;
+}
+.login-brand-panel .company-product {
+  color: #fff;
+  border-color: #ffffff30;
+}
+.login-brand-panel .company-product small {
+  color: var(--brand-mint);
+}
+@media (max-width: 600px) {
+  .weekly-brand .company-logo img {
+    width: 116px;
+  }
+  .weekly-brand .company-product {
+    display: none;
+  }
+  .weekly-brand .company-brand {
+    gap: 0;
+  }
+  .login-brand-panel .company-brand {
+    flex-wrap: wrap;
+  }
+}

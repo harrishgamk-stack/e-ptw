@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LogOut, ShieldCheck } from "lucide-react";
 import { useWeekly } from "./store";
 import { dateLabel, initials } from "./model";
+import { CompanyBrand } from "@/components/company-brand";
 export function WeeklyFrame({ children }: { children: React.ReactNode }) {
   const { actor, now, enabled, error, signOut } = useWeekly();
   if (enabled && actor?.role === "HSE")
@@ -11,8 +12,7 @@ export function WeeklyFrame({ children }: { children: React.ReactNode }) {
     <div className="weekly-app">
       <header className="weekly-header">
         <Link className="weekly-brand" href="/">
-          <span>PCG</span>
-          <strong>ePTW</strong>
+          <CompanyBrand />
         </Link>
         {actor && (
           <div className="weekly-person">

@@ -6,6 +6,7 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { Field } from "@/components/ui";
 import { useStore } from "@/components/store";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { CompanyBrand } from "./company-brand";
 export default function Login() {
   const { demo } = useStore(),
     router = useRouter();
@@ -17,17 +18,12 @@ export default function Login() {
     <div className="login-page">
       <div className="login-brand-panel">
         <div className="brand">
-          <span className="brand-symbol">
-            P<span>C</span>G
-          </span>
-          <span className="brand-text">
-            ePTW<small>PREMIER CENTRE GROUP</small>
-          </span>
+          <CompanyBrand />
         </div>
         <div>
           <ShieldCheck
             size={42}
-            style={{ color: "#8fb5df", marginBottom: 25 }}
+            style={{ color: "var(--brand-mint)", marginBottom: 25 }}
           />
           <h1>Safer work starts with a clear plan.</h1>
           <p>

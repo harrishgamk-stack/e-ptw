@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useWeekly } from "../weekly/store";
+import { CompanyBrand } from "@/components/company-brand";
 import { effectiveWeeklyStatus, initials } from "../weekly/model";
 
 const navigation = [
@@ -56,12 +57,7 @@ export function HseShell({ children }: { children: React.ReactNode }) {
       )}
       <aside className={`sidebar ${mobile ? "open" : ""}`}>
         <Link href="/hse" className="brand">
-          <span className="brand-symbol">
-            P<span>C</span>G
-          </span>
-          <span className="brand-text">
-            ePTW<small>PREMIER CENTRE GROUP</small>
-          </span>
+          <CompanyBrand />
         </Link>
         <div className="workspace-label">HSE ADMINISTRATION</div>
         <div className="site-select">

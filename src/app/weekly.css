@@ -1,7 +1,7 @@
 .weekly-app {
   min-height: 100vh;
-  background: #f5f8fb;
-  color: #20364c;
+  background: #f6fafa;
+  color: #264642;
 }
 .hse-permit-content {
   min-height: 0;
@@ -26,14 +26,14 @@
   justify-content: space-between;
   gap: 20px;
   padding: 20px 24px;
-  border-top: 1px solid #e7edf3;
+  border-top: 1px solid #e9f1f0;
 }
 .hse-monitor-row strong {
   font-size: 12px;
 }
 .hse-monitor-row p,
 .hse-monitor-row > span {
-  color: #738498;
+  color: #789390;
   font-size: 11px;
 }
 .hse-reference dl {
@@ -45,7 +45,7 @@
 }
 .hse-reference dd {
   margin: 8px 0 0;
-  color: #738498;
+  color: #789390;
   line-height: 1.7;
 }
 @media (max-width: 650px) {
@@ -62,7 +62,7 @@
 .weekly-header {
   height: 82px;
   background: white;
-  border-bottom: 1px solid #e5ebf1;
+  border-bottom: 1px solid #e7efee;
   padding: 0 max(25px, calc((100vw - 1180px) / 2));
   display: flex;
   align-items: center;
@@ -73,21 +73,6 @@
   display: flex;
   align-items: center;
   gap: 15px;
-}
-.weekly-brand > span {
-  font-size: 25px;
-  letter-spacing: -2px;
-  font-weight: 900;
-  color: #1c4368;
-  border-bottom: 3px solid #71a6db;
-  padding-bottom: 3px;
-}
-.weekly-brand strong {
-  font-size: 24px;
-  letter-spacing: -0.8px;
-  font-weight: 600;
-  border-left: 1px solid #e0e8f0;
-  padding-left: 15px;
 }
 .weekly-person {
   display: flex;
@@ -100,8 +85,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #e7eff8;
-  color: #6085aa;
+  background: #e9f6f4;
+  color: #6aa099;
   font-size: 12px;
   border-radius: 50%;
 }
@@ -112,25 +97,25 @@
 }
 .weekly-person small {
   font-size: 10px;
-  color: #92a1b3;
+  color: #97aeac;
   display: block;
   margin-top: 5px;
 }
 .weekly-person button {
   margin-left: 14px;
-  color: #8499af;
+  color: #8aa9a5;
   min-height: 44px;
   min-width: 35px;
 }
 .weekly-demo {
-  background: #eaf1f9;
-  border-bottom: 1px solid #dfe8f4;
+  background: #ecf7f6;
+  border-bottom: 1px solid #e2f1ef;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 14px;
   padding: 10px 22px;
-  color: #8497af;
+  color: #8aa9a5;
 }
 .weekly-demo > span {
   font-size: 9px;
@@ -145,7 +130,7 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #7d9fca;
+  background: #88bfb9;
 }
 .weekly-demo p {
   font-size: 10px;
@@ -165,9 +150,9 @@
   justify-content: space-between;
   align-items: center;
   gap: 18px;
-  border-top: 1px solid #e4ebf2;
+  border-top: 1px solid #e6f0ef;
   font-size: 10px;
-  color: #9aabba;
+  color: #9eb6b3;
 }
 .weekly-footer span:first-child {
   display: flex;
@@ -179,7 +164,7 @@
   font-size: 9px;
   letter-spacing: 1.6px;
   font-weight: 600;
-  color: #859db5;
+  color: #8caeaa;
   margin-bottom: 13px;
 }
 .weekly-login {
@@ -197,13 +182,13 @@
 }
 .weekly-login-message h1 em {
   font-style: normal;
-  color: #4e8dcb;
+  color: #60baaf;
 }
 .weekly-login-message > p {
   max-width: 430px;
   font-size: 14px;
   line-height: 2;
-  color: #8395a8;
+  color: #88a3a0;
   margin: 26px 0;
 }
 .weekly-login-message > div {
@@ -211,13 +196,13 @@
   gap: 9px;
   align-items: center;
   font-size: 12px;
-  color: #7f9ab4;
+  color: #86ada8;
 }
 .weekly-card {
   background: white;
-  border: 1px solid #e1e9f1;
+  border: 1px solid #e3efed;
   border-radius: 12px;
-  box-shadow: 0 3px 10px #15385303;
+  box-shadow: 0 3px 10px #1e4a4503;
 }
 .weekly-login-form {
   padding: 29px 32px;
@@ -225,12 +210,12 @@
 .weekly-form-icon {
   height: 47px;
   width: 47px;
-  background: #edf5ff;
+  background: #f0fcfb;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #5e8ebe;
+  color: #6bb1a8;
   margin-bottom: 20px;
 }
 .weekly-login-form h2 {
@@ -239,7 +224,7 @@
 }
 .weekly-login-form > p {
   font-size: 12px;
-  color: #8e9eaf;
+  color: #93aaa8;
   margin: 11px 0 23px;
   line-height: 1.9;
 }
@@ -256,7 +241,7 @@
   min-height: 45px;
   font-weight: 400;
   background: #fff;
-  border-color: #dce6ef;
+  border-color: #dfeceb;
 }
 .weekly-app .field textarea {
   min-height: 92px;
@@ -277,20 +262,20 @@
   line-height: 1.4;
 }
 .weekly-button.primary {
-  background: #2b78cf;
+  background: var(--brand-primary);
   color: white;
-  box-shadow: 0 2px 4px #1e5e9c0b;
+  box-shadow: 0 2px 4px #308a800b;
 }
 .weekly-button.primary:hover {
-  background: #1f65b3;
+  background: var(--brand-primary-hover);
 }
 .weekly-button.secondary {
   background: white;
-  border-color: #dae5ef;
-  color: #6f88a1;
+  border-color: #ddecea;
+  color: #769a96;
 }
 .weekly-button.secondary:hover {
-  background: #f6faff;
+  background: #f7fefd;
 }
 .weekly-button.danger {
   background: #ce5551;
@@ -306,18 +291,18 @@
 .weekly-app .weekly-small {
   font-size: 10px !important;
   line-height: 1.9 !important;
-  color: #94a5b7 !important;
+  color: #99b2af !important;
   margin-top: 15px;
 }
 .weekly-sample-users {
-  border-top: 1px solid #e9eef4;
+  border-top: 1px solid #ebf2f2;
   padding-top: 19px;
   margin-top: 20px;
 }
 .weekly-sample-users > span {
   display: block;
   font-size: 10px;
-  color: #a0adbc;
+  color: #a4b8b6;
   margin-bottom: 12px;
 }
 .weekly-sample-users > div {
@@ -326,9 +311,9 @@
   gap: 8px;
 }
 .weekly-sample-users button {
-  border: 1px solid #e3ebf3;
-  background: #fafcff;
-  color: #7c94ac;
+  border: 1px solid #e5f1ef;
+  background: #fbfefe;
+  color: #83a5a1;
   font-size: 11px;
   border-radius: 6px;
   padding: 10px;
@@ -349,7 +334,7 @@
 .weekly-page-heading p {
   font-size: 13px;
   line-height: 1.9;
-  color: #8799ad;
+  color: #8ca8a4;
   margin-top: 10px;
   max-width: 760px;
 }
@@ -367,8 +352,8 @@
   display: block;
 }
 .weekly-permit-card:hover {
-  border-color: #9cbbdb;
-  box-shadow: 0 5px 20px #29496c08;
+  border-color: #a5d2cd;
+  box-shadow: 0 5px 20px #32635d08;
 }
 .weekly-card-top {
   display: flex;
@@ -379,7 +364,7 @@
 }
 .weekly-card-top > span:first-child {
   font-size: 10px;
-  color: #90a2b7;
+  color: #95b2ae;
   letter-spacing: 0.3px;
 }
 .weekly-status {
@@ -387,8 +372,8 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  background: #edf3fb;
-  color: #6f95bd;
+  background: #eff9f8;
+  color: #7ab2ac;
   font-size: 10px;
   font-weight: 500;
   padding: 7px 9px;
@@ -429,7 +414,7 @@
   align-items: center;
   gap: 7px;
   font-size: 12px;
-  color: #8498af;
+  color: #8aa9a5;
   margin-top: 11px;
 }
 .weekly-validity {
@@ -440,24 +425,24 @@
   margin-top: 26px;
   padding-bottom: 20px;
   font-size: 12px;
-  color: #8ca0b6;
+  color: #92b0ad;
 }
 .weekly-validity strong {
   font-weight: 500;
   font-size: 10px;
-  background: #f3f7fb;
+  background: #f4faf9;
   padding: 5px 8px;
   border-radius: 4px;
-  color: #8b9fb5;
+  color: #91afac;
 }
 .weekly-permit-card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #e9eef4;
+  border-top: 1px solid #ebf2f2;
   padding-top: 18px;
   font-size: 11px;
-  color: #91a4b7;
+  color: #96b2ae;
 }
 .weekly-permit-card-footer > span {
   display: flex;
@@ -476,7 +461,7 @@
   grid-column: 1/-1;
 }
 .weekly-empty > svg {
-  color: #9bb2c9;
+  color: #a1c3bf;
   margin: 0 auto 20px;
 }
 .weekly-empty h1,
@@ -488,7 +473,7 @@
 .weekly-empty p {
   max-width: 550px;
   margin: 15px auto 20px;
-  color: #91a2b5;
+  color: #96b0ad;
   font-size: 13px;
   line-height: 1.9;
 }
@@ -501,7 +486,7 @@
   margin-top: 26px;
 }
 .weekly-open-qr > svg {
-  color: #86a2bf;
+  color: #8eb7b2;
 }
 .weekly-open-qr h3 {
   font-size: 13px;
@@ -509,7 +494,7 @@
 }
 .weekly-open-qr p:not(.error-message) {
   font-size: 11px;
-  color: #9aabba;
+  color: #9eb6b3;
   margin-top: 6px;
 }
 .weekly-open-qr > input {
@@ -529,12 +514,12 @@
   align-items: center;
   font-size: 11px;
   line-height: 1.8;
-  color: #94a7bb;
+  color: #99b6b2;
   margin: 24px 0;
 }
 .weekly-legacy {
   font-size: 11px;
-  color: #8ea5bc;
+  color: #94b6b2;
 }
 .weekly-hse-counts {
   display: flex;
@@ -543,17 +528,17 @@
   margin: 0 0 24px;
 }
 .weekly-hse-counts > span {
-  background: #edf3f9;
-  border: 1px solid #e1e9f1;
+  background: #eff7f6;
+  border: 1px solid #e3efed;
   border-radius: 7px;
   padding: 14px 17px;
   font-size: 11px;
-  color: #859bb3;
+  color: #8bada9;
 }
 .weekly-hse-counts strong {
   font-size: 19px;
   font-weight: 500;
-  color: #567da5;
+  color: #619a93;
   margin-right: 7px;
 }
 .weekly-narrow {
@@ -575,21 +560,21 @@
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: #edf4fc;
-  border: 1px solid #e0eaf6;
+  background: #effaf9;
+  border: 1px solid #e3f3f1;
   padding: 17px 18px;
   border-radius: 9px;
-  color: #7093b8;
+  color: #7aaea8;
   margin: 20px 0;
 }
 .weekly-info > svg {
   margin-top: 2px;
-  color: #86a6c5;
+  color: #8fbcb7;
 }
 .weekly-info p {
   font-size: 12px;
   line-height: 1.9;
-  color: #7f9ab7;
+  color: #87afaa;
 }
 .weekly-info strong {
   font-size: 13px;
@@ -614,7 +599,7 @@
 }
 .weekly-work-heading p {
   font-size: 12px;
-  color: #8aa0b6;
+  color: #90b0ac;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -631,16 +616,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #9aabba;
+  color: #9eb6b3;
   font-size: 10px;
   padding: 12px 0;
-  border-bottom: 2px solid #e5edf4;
+  border-bottom: 2px solid #e7f2f1;
 }
 .weekly-flow > div > span {
   width: 21px;
   height: 21px;
   border-radius: 50%;
-  border: 1px solid #dce6f0;
+  border: 1px solid #dfedec;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -648,12 +633,12 @@
   font-size: 10px;
 }
 .weekly-flow > div.current {
-  border-color: #82acda;
-  color: #5789bd;
+  border-color: #8ecec6;
+  color: #65afa6;
 }
 .weekly-flow > div.current > span {
-  background: #dfecfb;
-  border-color: #dfecfb;
+  background: #e3f7f5;
+  border-color: #e3f7f5;
 }
 .weekly-flow > div.complete {
   color: #86ac98;
@@ -694,7 +679,7 @@
 .weekly-party-progress {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: 1px solid #e3ebf3;
+  border: 1px solid #e5f1ef;
   border-radius: 10px;
   background: #fff;
   overflow: hidden;
@@ -704,7 +689,7 @@
   gap: 10px;
   align-items: flex-start;
   padding: 20px 14px;
-  border-right: 1px solid #edf2f7;
+  border-right: 1px solid #eef6f5;
   min-width: 0;
 }
 .weekly-party-progress > div:last-child {
@@ -714,8 +699,8 @@
   height: 27px;
   width: 27px;
   border-radius: 50%;
-  background: #edf3fa;
-  color: #8aa5bf;
+  background: #eff8f7;
+  color: #91b8b3;
   font-size: 11px;
   display: flex;
   align-items: center;
@@ -729,7 +714,7 @@
 }
 .weekly-party-progress p {
   font-size: 10px;
-  color: #8a9fb5;
+  color: #90afab;
   margin-top: 6px;
   line-height: 1.7;
   overflow-wrap: anywhere;
@@ -737,7 +722,7 @@
 .weekly-party-progress small {
   display: block;
   font-size: 9px;
-  color: #a3b1c0;
+  color: #a7bcba;
   margin-top: 7px;
   line-height: 1.6;
 }
@@ -758,9 +743,9 @@
   width: 44px;
   align-items: center;
   justify-content: center;
-  background: #edf4fc;
+  background: #effaf9;
   border-radius: 11px;
-  color: #709bc6;
+  color: #7cbab3;
   margin: 0 auto 16px;
 }
 .weekly-share h2 {
@@ -769,7 +754,7 @@
 }
 .weekly-share p {
   font-size: 11px;
-  color: #91a4b7;
+  color: #96b2ae;
   line-height: 1.9;
   margin: 10px 0 16px;
 }
@@ -788,7 +773,7 @@
 .weekly-share > small {
   display: block;
   font-size: 10px;
-  color: #9daebb;
+  color: #a1b7b4;
   line-height: 1.8;
   margin-top: 16px;
 }
@@ -800,7 +785,7 @@
   justify-content: space-between;
   gap: 14px;
   align-items: flex-start;
-  border-bottom: 1px solid #edf1f6;
+  border-bottom: 1px solid #eef5f4;
   padding-bottom: 18px;
   margin-bottom: 22px;
 }
@@ -811,14 +796,14 @@
 .weekly-my-section-heading p {
   font-size: 11px;
   line-height: 1.9;
-  color: #8a9fb5;
+  color: #90afab;
   margin-top: 9px;
 }
 .weekly-my-section-heading > span {
   font-size: 9px;
   white-space: nowrap;
-  color: #89a1b9;
-  background: #f0f5fa;
+  color: #90b2ae;
+  background: #f1f9f8;
   padding: 6px 8px;
   border-radius: 4px;
 }
@@ -842,17 +827,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid #e1eaf2;
+  border: 1px solid #e3f0ee;
   border-radius: 6px;
   font-size: 11px;
-  color: #849bb2;
+  color: #8aaca8;
   cursor: pointer;
   line-height: 1.5;
 }
 .weekly-choice.chosen {
-  background: #f2f7ff;
-  color: #6893c2;
-  border-color: #c6d8ee;
+  background: #f4fdfc;
+  color: #75b5ae;
+  border-color: #cce8e5;
 }
 .weekly-choice input {
   width: 14px;
@@ -860,13 +845,13 @@
   margin: 0;
 }
 .weekly-disclosure {
-  border-top: 1px solid #e7edf4;
+  border-top: 1px solid #e9f2f1;
   margin: 19px 0 0;
   padding-top: 17px;
 }
 .weekly-disclosure > summary {
   font-size: 12px;
-  color: #7593b3;
+  color: #7eaaa5;
   cursor: pointer;
   line-height: 1.8;
 }
@@ -875,7 +860,7 @@
 }
 .weekly-muted {
   font-size: 12px;
-  color: #94a6b9;
+  color: #99b4b1;
   line-height: 1.9;
 }
 .weekly-check-grid {
@@ -886,7 +871,7 @@
 }
 .weekly-app .check {
   font-size: 12px;
-  color: #8095ab;
+  color: #86a5a1;
   line-height: 1.8;
 }
 .weekly-app .check input {
@@ -901,7 +886,7 @@
   margin: 22px 0;
 }
 .weekly-section-footer {
-  border-top: 1px solid #e8edf4;
+  border-top: 1px solid #eaf2f1;
   padding-top: 20px;
   margin-top: 24px;
   display: flex;
@@ -911,7 +896,7 @@
 }
 .weekly-section-footer p {
   font-size: 10px;
-  color: #a0afbf;
+  color: #a4bbb8;
   line-height: 1.9;
   max-width: 270px;
 }
@@ -970,7 +955,7 @@
   margin-bottom: 22px;
 }
 .weekly-action-title > svg {
-  color: #749cc4;
+  color: #7fb9b2;
   margin-top: 2px;
 }
 .weekly-action-title h2 {
@@ -981,7 +966,7 @@
 }
 .weekly-action-title p {
   font-size: 11px;
-  color: #92a6bb;
+  color: #98b5b2;
   line-height: 1.9;
   margin-top: 8px;
 }
@@ -996,8 +981,8 @@
 }
 .weekly-daily {
   margin: 0 0 24px;
-  border-color: #d8e7f7;
-  background: #fcfdff;
+  border-color: #dcf3f0;
+  background: #fcfffe;
 }
 .weekly-daily .check {
   margin-bottom: 20px;
@@ -1027,7 +1012,7 @@
 }
 .weekly-full-summary > summary:before {
   content: "+";
-  color: #8ba6c1;
+  color: #93b9b5;
   font-size: 18px;
   margin-right: 3px;
 }
@@ -1038,7 +1023,7 @@
 .weekly-history > summary > span {
   font-size: 9px;
   font-weight: 400;
-  color: #9cadbe;
+  color: #a1b9b6;
   margin-left: auto;
   white-space: nowrap;
 }
@@ -1046,7 +1031,7 @@
   padding: 0 24px 23px;
 }
 .weekly-summary-body > section {
-  border-top: 1px solid #e7edf4;
+  border-top: 1px solid #e9f2f1;
   padding-top: 22px;
   margin-top: 10px;
   margin-bottom: 20px;
@@ -1063,14 +1048,14 @@
 }
 .weekly-definition-grid dt {
   font-size: 10px;
-  color: #9aabbd;
+  color: #9fb8b5;
   margin-bottom: 8px;
 }
 .weekly-definition-grid dd {
   margin: 0;
   font-size: 12px;
   line-height: 1.9;
-  color: #788fa7;
+  color: #7fa09c;
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
@@ -1079,20 +1064,20 @@
   grid-template-columns: 80px 1fr;
   gap: 7px 12px;
   padding: 13px 0;
-  border-top: 1px solid #edf1f6;
+  border-top: 1px solid #eef5f4;
   font-size: 11px;
   line-height: 1.7;
 }
 .weekly-signature-row strong {
   font-weight: 500;
-  color: #7c93ac;
+  color: #83a5a1;
 }
 .weekly-signature-row > span {
-  color: #899fb6;
+  color: #8fb0ac;
 }
 .weekly-signature-row small {
   font-size: 9px;
-  color: #a4b2c1;
+  color: #a8bdbb;
   grid-column: 2/-1;
 }
 .weekly-outstanding {
@@ -1122,7 +1107,7 @@
 }
 .weekly-attendance > div > p {
   font-size: 11px;
-  color: #9aaabd;
+  color: #9fb8b5;
   margin-top: 8px;
   line-height: 1.8;
 }
@@ -1133,15 +1118,15 @@
   margin: 25px 0 22px;
 }
 .weekly-days > div {
-  background: #f8fafc;
-  border: 1px solid #e8eef5;
+  background: #f9fbfb;
+  border: 1px solid #eaf3f2;
   border-radius: 7px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   padding: 11px 4px;
-  color: #a7b5c4;
+  color: #abc0be;
 }
 .weekly-days span {
   font-size: 9px;
@@ -1158,9 +1143,9 @@
   justify-content: center;
 }
 .weekly-days .today {
-  border-color: #98b9dd;
-  background: #f3f8ff;
-  color: #6b94bd;
+  border-color: #a2d3ce;
+  background: #f5fdfc;
+  color: #76b2ab;
 }
 .weekly-days .signed {
   background: #f0f8f3;
@@ -1186,49 +1171,49 @@
   margin: 20px 0;
 }
 .weekly-monitor-history {
-  border-top: 1px solid #e9eef5;
+  border-top: 1px solid #ebf3f2;
   margin-top: 20px;
 }
 .weekly-monitor-history > div {
   padding: 15px 0;
-  border-bottom: 1px solid #edf1f6;
+  border-bottom: 1px solid #eef5f4;
 }
 .weekly-monitor-history strong {
   font-size: 11px;
   font-weight: 500;
-  color: #859eb6;
+  color: #8cafab;
 }
 .weekly-monitor-history p {
   font-size: 11px;
   line-height: 1.8;
-  color: #98aabd;
+  color: #9db8b5;
   margin: 6px 0;
 }
 .weekly-monitor-history small {
   font-size: 9px;
-  color: #a8b5c4;
+  color: #acc0be;
 }
 .weekly-history > div {
   margin: 0 24px;
   padding: 16px 0;
-  border-top: 1px solid #e8edf4;
+  border-top: 1px solid #eaf2f1;
 }
 .weekly-history strong {
   font-size: 11px;
   text-transform: capitalize;
   font-weight: 500;
-  color: #7f99b3;
+  color: #86aca7;
 }
 .weekly-history p {
   overflow-wrap: anywhere;
   font-size: 11px;
   line-height: 1.9;
-  color: #97aabd;
+  color: #9cb8b4;
   margin: 6px 0;
 }
 .weekly-history small {
   font-size: 9px;
-  color: #a8b8c7;
+  color: #acc3c0;
 }
 .weekly-history > .weekly-small {
   padding: 0 24px 20px;
@@ -1247,14 +1232,14 @@
 }
 .weekly-approval-card p {
   font-size: 11px;
-  color: #91a6b9;
+  color: #97b3b0;
   line-height: 1.9;
   margin-top: 10px;
 }
 .weekly-approval-card small {
   display: block;
   font-size: 9px;
-  color: #a3b1c1;
+  color: #a7bdba;
   margin-top: 10px;
   line-height: 1.8;
 }
@@ -1262,13 +1247,13 @@
   max-width: 740px;
   margin: 0 auto 30px;
   background: white;
-  border: 1px solid #e2e9f2;
+  border: 1px solid #e4f0ee;
   border-radius: 12px;
   padding: 30px;
   text-align: center;
 }
 .weekly-qr-verification > svg {
-  color: #7a9dbf;
+  color: #84b5b0;
   margin: 0 auto 18px;
 }
 .weekly-qr-verification h1 {
@@ -1279,7 +1264,7 @@
 .weekly-qr-verification > p {
   font-size: 12px;
   line-height: 1.9;
-  color: #91a4b8;
+  color: #96b3af;
   margin: 16px 0;
 }
 .weekly-qr-verification .weekly-info,
@@ -1296,7 +1281,7 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: #132d4877;
+  background: #1a413c77;
   backdrop-filter: blur(3px);
   padding: 25px;
   display: flex;
@@ -1310,7 +1295,7 @@
   max-height: 90dvh;
   overflow: auto;
   border-radius: 13px;
-  box-shadow: 0 20px 80px #0c213544;
+  box-shadow: 0 20px 80px #122f2c44;
   background: white;
 }
 .weekly-qr-close {
@@ -1322,7 +1307,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #809ab5;
+  color: #87aea9;
   z-index: 1;
 }
 .weekly-qr-modal .weekly-share {
@@ -1338,7 +1323,7 @@
   text-align: center;
   padding: 100px 20px;
   font-size: 14px;
-  color: #91a7bb;
+  color: #97b5b2;
 }
 @media (max-width: 1000px) {
   .weekly-main {
@@ -1365,7 +1350,7 @@
   }
   .weekly-party-progress > div {
     border-right: 0;
-    border-bottom: 1px solid #edf1f6;
+    border-bottom: 1px solid #eef5f4;
     padding: 14px 17px;
     align-items: center;
   }
@@ -1412,13 +1397,6 @@
   }
   .weekly-brand {
     gap: 9px;
-  }
-  .weekly-brand > span {
-    font-size: 20px;
-  }
-  .weekly-brand strong {
-    font-size: 20px;
-    padding-left: 10px;
   }
   .weekly-person {
     gap: 7px;
@@ -1689,7 +1667,7 @@
     text-align: center;
     gap: 9px;
     border-bottom: 0;
-    border-right: 1px solid #edf1f6;
+    border-right: 1px solid #eef5f4;
     padding: 14px 8px;
     align-items: center;
   }
