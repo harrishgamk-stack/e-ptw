@@ -13,13 +13,18 @@ export function validDraft(): Draft {
     purpose: "Verify condition before planned maintenance.",
     requester: "Test Requester",
     phone: "+60123456789",
-    email: "requester@pcg.test",
+    requesterDepartment: "Maintenance",
+    contractors: [
+      {
+        id: "contractor-test",
+        name: "PCG Maintenance",
+        phone: "+60123456789",
+        safetyInduction: true,
+        acknowledged: true,
+      },
+    ],
     holder: "Test Holder",
     contractor: "PCG Maintenance",
-    contractorApproved: true,
-    documentationComplete: true,
-    certificateAvailable: true,
-    sheComplete: true,
     workers: [
       {
         id: "worker-test",
@@ -40,6 +45,7 @@ export function validDraft(): Draft {
     hazards: [
       {
         id: "hazard-test",
+        activity: "Lone working",
         hazard: "Slips and trips",
         consequence: "Minor injury",
         affected: "Work team",

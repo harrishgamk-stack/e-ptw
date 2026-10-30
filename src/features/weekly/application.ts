@@ -1,5 +1,12 @@
-import { Draft, draftSchema, emptyDraft } from "@/lib/domain";
+import { Draft, draftSchema, emptyDraft, activities } from "@/lib/domain";
 import { emptyParty, PartyData, PartyRole, WeeklyPermit } from "./model";
+import {
+  companyAssessmentIssues,
+  contractorIssues,
+  contractorNames,
+  workRequirements,
+  activityHazards,
+} from "@/lib/work-policy";
 const specialistAliases: Record<string, string[]> = {
   isolationPoint: [
     "Mechanical work:Isolation point",
@@ -23,9 +30,18 @@ export function applicationSections(
     h = emptyParty();
   Object.assign(r, {
     scope: draft.description,
-    company: draft.contractor || draft.department,
+    company:
+      contractorNames(draft) || draft.requesterDepartment || draft.department,
+    requesterDepartment: draft.requesterDepartment ?? draft.department,
+    ...(draft.contractors ? { contractors: draft.contractors } : {}),
+    ...(draft.companyRiskAssessment
+      ? { companyRiskAssessment: draft.companyRiskAssessment }
+      : {}),
     equipment: draft.equipment,
     activities: draft.activities,
+    ...(draft.requirementsVersion === 1
+      ? { hazards: structuredClone(draft.hazards) }
+      : {}),
   });
   const hazard = draft.hazards[0];
   if (hazard)
@@ -61,8 +77,27 @@ export function applicationSections(
   return structuredClone({ Requester: r, Issuer: i, Holder: h });
 }
 
-export function applicationInput(value: unknown) {
-  const draft = draftSchema.parse(value);
+export function applicationInput(value: unknown, now = new Date()) {
+  const parsed = draftSchema.parse(value);
+  const draft: Draft = {
+    ...parsed,
+    requirementsVersion: 1,
+    hazards: activityHazards(parsed.hazards, parsed.activities),
+    requesterDepartment: parsed.requesterDepartment || parsed.department,
+    contractor: contractorNames(parsed),
+    ppe: [
+      ...new Set([...parsed.ppe, ...workRequirements(parsed.activities).ppe]),
+    ],
+  };
+  if (!draft.department.trim())
+    throw new Error(
+      "Enter the work department before creating the shared permit.",
+    );
+  const issues = [
+    ...contractorIssues(draft),
+    ...companyAssessmentIssues(draft, now),
+  ];
+  if (issues.length) throw new Error(issues.join("\n"));
   if (
     !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d$/.test(draft.start) ||
     !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d$/.test(draft.end)
@@ -72,6 +107,8 @@ export function applicationInput(value: unknown) {
     throw new Error(
       "Choose at least one work activity before creating the shared permit.",
     );
+  if (draft.activities.some((a) => !activities.includes(a)))
+    throw new Error("Choose supported work activities from the activity list.");
   if (draft.description.trim().length < 10)
     throw new Error(
       "Describe the work scope before creating the shared permit.",
@@ -94,18 +131,46 @@ export function syncApplication(p: WeeklyPermit, role: PartyRole) {
   if (!a) return;
   const d = p.sections[role].data;
   if (role === "Requester") {
+    if (d.hazards) a.hazards = structuredClone(d.hazards);
     Object.assign(a, {
       description: d.scope,
-      contractor: d.company,
+      contractor: d.contractors
+        ? d.contractors
+            .map((c) => c.name.trim())
+            .filter(Boolean)
+            .join("; ")
+        : d.company,
+      ...(d.requesterDepartment !== undefined
+        ? { requesterDepartment: d.requesterDepartment }
+        : {}),
+      ...(d.contractors ? { contractors: structuredClone(d.contractors) } : {}),
+      ...(d.companyRiskAssessment
+        ? { companyRiskAssessment: structuredClone(d.companyRiskAssessment) }
+        : {}),
       equipment: d.equipment,
       activities: [...d.activities],
     });
+    const assessment = d.companyRiskAssessment;
+    if (assessment?.documentName) {
+      const existing = a.documents.find(
+        (doc) => doc.name === assessment.documentName,
+      );
+      if (existing) existing.type = "Company risk assessment";
+      else
+        a.documents.push({
+          name: assessment.documentName,
+          type: "Company risk assessment",
+          path: "local-demo-metadata",
+          expiry: "",
+        });
+    }
     const hazard = a.hazards[0] ?? {
       id: crypto.randomUUID(),
       affected: "Work team",
     };
     a.hazards[0] = {
       ...hazard,
+      activity: d.activities[0],
       hazard: d.hazard,
       consequence: d.consequence,
       controls: d.riskControls,
@@ -116,6 +181,8 @@ export function syncApplication(p: WeeklyPermit, role: PartyRole) {
       residualSeverity: d.residualSeverity,
     };
   }
+  if (role === "Requester")
+    a.hazards = activityHazards(a.hazards, d.activities);
   if (role === "Issuer") {
     const previous = applicationSections(a).Issuer.special;
     const special: Record<string, string> = {

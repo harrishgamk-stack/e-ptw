@@ -1,6 +1,7 @@
 import { canonicalJson, digest } from "@/lib/acknowledgement";
 import {
   Draft,
+  activities,
   hazardSchema,
   safetyControls,
   specialControls,
@@ -10,6 +11,13 @@ import {
   applicationSections,
   syncApplication,
 } from "./application";
+import {
+  companyAssessmentIssues,
+  contractorIssues,
+  workRequirements,
+  activityAssessmentIssues,
+  activityHazards,
+} from "@/lib/work-policy";
 import {
   Approval,
   Attendance,
@@ -32,6 +40,10 @@ import {
 
 export const roleFields: Record<PartyRole, (keyof PartyData)[]> = {
   Requester: [
+    "requesterDepartment",
+    "contractors",
+    "companyRiskAssessment",
+    "hazards",
     "scope",
     "company",
     "equipment",
@@ -57,6 +69,9 @@ export const roleFields: Record<PartyRole, (keyof PartyData)[]> = {
 };
 export function contentOf(p: WeeklyPermit): WorkContent {
   return {
+    ...(p.requirementsVersion
+      ? { requirementsVersion: p.requirementsVersion }
+      : {}),
     id: p.id,
     number: p.number,
     title: p.title,
@@ -69,6 +84,30 @@ export function contentOf(p: WeeklyPermit): WorkContent {
       partyRoles.map((r) => [r, p.sections[r].data]),
     ) as Record<PartyRole, PartyData>,
     ...(p.application ? { application: structuredClone(p.application) } : {}),
+  };
+}
+const currentPolicy = (p: WeeklyPermit) =>
+  p.requirementsVersion === 1 || p.application?.requirementsVersion === 1;
+function assessmentPlan(p: WeeklyPermit) {
+  const r = p.sections.Requester.data,
+    assessment =
+      r.companyRiskAssessment ?? p.application?.companyRiskAssessment;
+  return {
+    activities: r.activities,
+    hazards: p.application?.hazards ?? r.hazards ?? [],
+    companyRiskAssessment: assessment,
+    documents:
+      p.application?.documents ??
+      (assessment?.documentName
+        ? [
+            {
+              name: assessment.documentName,
+              type: "Company risk assessment",
+              path: "local-demo-metadata",
+              expiry: "",
+            },
+          ]
+        : []),
   };
 }
 function archiveSignedWork(p: WeeklyPermit, hash: string, at: string) {
@@ -86,11 +125,21 @@ function archiveSignedWork(p: WeeklyPermit, hash: string, at: string) {
       snapshot: structuredClone(contentOf(p)),
     });
 }
-export function sectionIssues(p: WeeklyPermit, role: PartyRole): string[] {
+export function sectionIssues(
+  p: WeeklyPermit,
+  role: PartyRole,
+  now = new Date(),
+): string[] {
   const d = p.sections[role].data,
     issues: string[] = [];
   if (!p.members[role]) issues.push(`${role} has not joined.`);
   if (role === "Requester") {
+    if (currentPolicy(p)) {
+      if (!d.requesterDepartment?.trim())
+        issues.push("Enter the Requester department.");
+      issues.push(...contractorIssues({ contractors: d.contractors }));
+      issues.push(...companyAssessmentIssues(assessmentPlan(p), now));
+    }
     if (d.scope.trim().length < 10 || !d.company.trim())
       issues.push("Add the work scope and company.");
     if (!d.activities.length) issues.push("Choose at least one work activity.");
@@ -106,6 +155,15 @@ export function sectionIssues(p: WeeklyPermit, role: PartyRole): string[] {
       issues.push("Extreme residual risk must be resolved before signing.");
   }
   if (role === "Issuer") {
+    if (
+      currentPolicy(p) &&
+      !workRequirements(p.sections.Requester.data.activities).ppe.every(
+        (required) => d.ppe.includes(required),
+      )
+    )
+      issues.push(
+        "Include every item of PPE required by the selected activities.",
+      );
     if (
       !d.ppe.length ||
       !safetyControls.every((c) => d.generalControls.includes(c))
@@ -132,6 +190,21 @@ export function sectionIssues(p: WeeklyPermit, role: PartyRole): string[] {
     )
       issues.push("Name the fire watch.");
     if (
+      currentPolicy(p) &&
+      p.sections.Requester.data.activities.includes("Hot Work") &&
+      !["required", "not-required"].includes(d.special.gasTesting ?? "")
+    )
+      issues.push("Record whether Hot Work gas testing is required.");
+    if (
+      currentPolicy(p) &&
+      p.sections.Requester.data.activities.includes("Hot Work") &&
+      d.special.gasTesting === "not-required" &&
+      (d.special.gasJustification ?? "").trim().length < 10
+    )
+      issues.push(
+        "Record the justification for gas testing not being required.",
+      );
+    if (
       p.sections.Requester.data.activities.includes("Confined Space") &&
       [
         "spaceName",
@@ -153,16 +226,26 @@ export function sectionIssues(p: WeeklyPermit, role: PartyRole): string[] {
   }
   return issues;
 }
-export function allIssues(p: WeeklyPermit) {
+export function allIssues(p: WeeklyPermit, now = new Date()) {
   const issues = partyRoles.flatMap((role) =>
-    sectionIssues(p, role).map((message) => `${role}: ${message}`),
+    sectionIssues(p, role, now).map((message) => `${role}: ${message}`),
   );
-  p.application?.hazards.slice(1).forEach((h, index) => {
+  if (!currentPolicy(p))
+    issues.unshift(
+      "Update and save the permit details to apply the current activity requirements before signing.",
+    );
+  if (currentPolicy(p))
+    issues.push(...activityAssessmentIssues(assessmentPlan(p)));
+  const detailedHazards = currentPolicy(p)
+    ? assessmentPlan(p).hazards
+    : p.application?.hazards.slice(1);
+  detailedHazards?.forEach((h, index) => {
+    const number = index + (currentPolicy(p) ? 1 : 2);
     if (!hazardSchema.safeParse(h).success)
-      issues.push(`Complete hazard ${index + 2} in the detailed permit form.`);
+      issues.push(`Complete hazard ${number} in the detailed permit form.`);
     if (h.residualLikelihood * h.residualSeverity >= 17)
       issues.push(
-        `Resolve the extreme residual risk for hazard ${index + 2} before signing.`,
+        `Resolve the extreme residual risk for hazard ${number} before signing.`,
       );
   });
   return issues;
@@ -175,7 +258,13 @@ export function currentSignatures(p: WeeklyPermit) {
   );
 }
 export function gasCurrent(p: WeeklyPermit, now: Date) {
-  if (!p.sections.Requester.data.activities.includes("Confined Space"))
+  if (
+    !p.sections.Requester.data.activities.includes("Confined Space") &&
+    !(
+      p.sections.Requester.data.activities.includes("Hot Work") &&
+      p.sections.Issuer.data.special.gasTesting === "required"
+    )
+  )
     return true;
   const latest = p.monitoring
     .filter((m) => m.kind === "GAS")
@@ -258,7 +347,7 @@ export async function applyWeeklyCommand(
       throw new Error("Only an Issuer or Requester can create a permit.");
     const input = createSchema.parse(command.input);
     if (input.application) {
-      const full = applicationInput(input.application);
+      const full = applicationInput(input.application, now);
       if (
         full.title.trim() !== input.title ||
         full.location.trim() !== input.location ||
@@ -268,6 +357,7 @@ export async function applyWeeklyCommand(
         throw new Error(
           "The work details must match the detailed application.",
         );
+      input.application = full.application;
     }
     const start = input.application
         ? `${input.application.start}:00+08:00`
@@ -288,6 +378,7 @@ export async function applyWeeklyCommand(
         "Choose a current or future period of up to seven calendar days.",
       );
     const p: WeeklyPermit = {
+      requirementsVersion: 1,
       id: crypto.randomUUID(),
       token: crypto.randomUUID(),
       number: `PTW-DEMO-${crypto.randomUUID().slice(0, 8).toUpperCase()}`,
@@ -381,6 +472,10 @@ export async function applyWeeklyCommand(
     throw new Error(
       "This permit is expired or closed. Work and signing are blocked.",
     );
+  if (["SIGN", "APPROVE"].includes(command.type) && !currentPolicy(p))
+    throw new Error(
+      "Update and save the permit details to apply the current activity requirements before signing or HSE approval.",
+    );
   if (command.type === "UPDATE_APPLICATION") {
     if (
       p.createdBy !== actor.id ||
@@ -397,7 +492,7 @@ export async function applyWeeklyCommand(
       throw new Error(
         "The permit changed in another tab. Reopen the detailed form before saving.",
       );
-    const input = applicationInput(command.application);
+    const input = applicationInput(command.application, now);
     // Reuse creation validation without granting another signing role or changing the shared QR.
     const validated = (
       await applyWeeklyCommand(source, actor.id, { type: "CREATE", input }, now)
@@ -407,6 +502,7 @@ export async function applyWeeklyCommand(
     p.start = validated.start;
     p.end = validated.end;
     p.application = validated.application;
+    p.requirementsVersion = 1;
     for (const role of partyRoles) {
       p.sections[role].data = validated.sections[role].data;
       p.sections[role].revision++;
@@ -437,16 +533,87 @@ export async function applyWeeklyCommand(
         "Someone updated your section. Reload the latest values before saving.",
       );
     const data = partySchema.parse(command.data);
+    const upgradingPolicy = !currentPolicy(p);
+    p.requirementsVersion = 1;
+    if (
+      command.role === "Requester" &&
+      data.hazards &&
+      canonicalJson(data.hazards) !== canonicalJson(section.data.hazards)
+    ) {
+      const h = data.hazards[0];
+      Object.assign(data, {
+        hazard: h?.hazard ?? "",
+        consequence: h?.consequence ?? "",
+        riskControls: h?.controls ?? "",
+        responsible: h?.responsible ?? "",
+        likelihood: h?.likelihood ?? 3,
+        severity: h?.severity ?? 3,
+        residualLikelihood: h?.residualLikelihood ?? 2,
+        residualSeverity: h?.residualSeverity ?? 2,
+      });
+    }
+    if (command.role === "Requester") {
+      const first = data.hazards?.[0] ?? {
+        id: crypto.randomUUID(),
+        affected: "Work team",
+        activity: undefined,
+      };
+      data.hazards = activityHazards(
+        [
+          {
+            ...first,
+            activity:
+              first.activity && data.activities.includes(first.activity)
+                ? first.activity
+                : data.activities[0],
+            hazard: data.hazard,
+            consequence: data.consequence,
+            controls: data.riskControls,
+            responsible: data.responsible,
+            likelihood: data.likelihood,
+            severity: data.severity,
+            residualLikelihood: data.residualLikelihood,
+            residualSeverity: data.residualSeverity,
+          },
+          ...(data.hazards?.slice(1) ?? []),
+        ],
+        data.activities,
+      );
+    }
+    if (
+      command.role === "Requester" &&
+      data.activities.some((a) => !activities.includes(a))
+    )
+      throw new Error(
+        "Choose supported work activities from the activity list.",
+      );
+    if (command.role === "Requester" && currentPolicy(p))
+      data.company =
+        data.contractors
+          ?.map((c) => c.name.trim())
+          .filter(Boolean)
+          .join("; ") ||
+        data.requesterDepartment ||
+        data.company;
+    if (command.role === "Issuer" && currentPolicy(p))
+      data.ppe = [
+        ...new Set([
+          ...data.ppe,
+          ...workRequirements(p.sections.Requester.data.activities).ppe,
+        ]),
+      ];
     for (const key of Object.keys(data) as (keyof PartyData)[])
       if (
         !roleFields[command.role].includes(key) &&
         canonicalJson(data[key]) !== canonicalJson(section.data[key])
       )
         throw new Error("Fields belonging to another role cannot be edited.");
-    if (canonicalJson(section.data) === canonicalJson(data))
+    if (canonicalJson(section.data) === canonicalJson(data) && !upgradingPolicy)
       return { state, permit: p };
     section.data = data;
     syncApplication(p, command.role);
+    if (command.role === "Requester" && p.application)
+      data.hazards = structuredClone(p.application.hazards);
     section.revision++;
     section.savedAt = at;
     section.savedBy = actor.id;
@@ -477,7 +644,7 @@ export async function applyWeeklyCommand(
       throw new Error(
         "Review the full permit and confirm the signing declaration.",
       );
-    const issues = allIssues(p);
+    const issues = allIssues(p, now);
     if (issues.length) throw new Error(issues[0]);
     const role = actor.role as PartyRole;
     if (p.signatures[role]?.revision === p.revision)
@@ -516,7 +683,7 @@ export async function applyWeeklyCommand(
       throw new Error(
         "Review the three sections, signatures and safety controls before signing.",
       );
-    const issues = allIssues(p);
+    const issues = allIssues(p, now);
     if (issues.length) throw new Error(issues[0]);
     if (!gasCurrent(p, now))
       throw new Error(
@@ -639,6 +806,7 @@ export async function applyWeeklyCommand(
   if (command.type === "RETURN") {
     if (!isHse || command.reason.trim().length < 5)
       throw new Error("HSE must provide a reason for requesting changes.");
+    p.requirementsVersion = 1;
     p.status = "COLLECTING";
     p.revision++;
     p.signatures = {};

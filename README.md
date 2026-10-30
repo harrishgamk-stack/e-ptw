@@ -40,6 +40,18 @@ Before activation, the creator can reopen **Edit detailed permit form**. A revis
 
 Implementation: `src/features/weekly/model.ts` defines the local records and Malaysia date rules; `engine.ts` enforces the workflow; `store.tsx` provides serialized local persistence. The role-specific screens live alongside these files. Tests cover four cooperating tabs, initial HSE activation, later-day sign-in without reapproval, role isolation, stale writes, retained history, gas checks and expired/suspended QR behavior.
 
+## Activity-driven requirements
+
+The Department choices include Mixing, Blowing and Extrusion. Requester Department replaces Employee ID; requester email and Work Order / Reference are removed from the form and review. Purpose of Work remains.
+
+Choose the contractor count to generate that many sections. Each contractor has a name, phone, Safety Induction completion and acknowledgement. Internal work may use zero contractors. All contractors carry into the shared permit, signed snapshot and HSE directory.
+
+Work Activities generate their risk assessment entries, mandatory PPE, safety checklists, named sub-permits and approval route. Confirm activity controls once under Safety Requirements; Special Permits displays the generated records and additional details without another selection or repeated checklist. Hot Work and Working at Height generate both permits when both activities are selected. New activity hazards can be completed by the Requester in their own section.
+
+High-risk activities or high initial risk scores require a formal company risk assessment reference, assessor, date, completion declaration for the selected activity scope and a registered assessment document before submission. Local demo storage retains document metadata only; it does not upload or verify file contents. Missing assessment entries, PPE or controls block signing and HSE activation. Where Hot Work gas testing is applicable, a current passing recorded test is required.
+
+The same parent QR, validity, three-party signatures and HSE decision cover the generated sub-permits. New records carry activity policy version 1. Older pending work must be updated before signing; edited or returned work requires fresh signatures. Existing signed history is preserved.
+
 ## Earlier pilot tools
 
 The earlier single-browser signing demonstration remains at `/legacy-home`, with its short draft form at `/legacy-new-permit`, full safety form at `/permits/new`, and detailed dashboard at `/overview`. Its sample permits use an explicit **28 October 2026, 11:50 MYT** snapshot. Settings can reset those earlier sample records. These older tools are separate from the shared weekly workflow; they do not activate or approve its permits.
@@ -83,7 +95,7 @@ Connected mode supports authentication, permission-filtered permit reads, draft 
 The user chose local demo mode; no cloud project was created or changed.
 
 1. Create a dedicated development Supabase project, or start the local Supabase stack with Docker using the committed configuration.
-2. Apply `supabase/migrations/20261028115944_pcg_foundation.sql`, then `supabase/seed.sql` with the Supabase SQL editor or a verified CLI workflow. The seed provisions reference data, not accounts.
+2. Apply every SQL file in `supabase/migrations/` in filename order, then `supabase/seed.sql` with the Supabase SQL editor or a verified CLI workflow. The seed provisions reference data, not accounts.
 3. Copy `.env.example` to `.env.local`; set the Supabase project URL, **publishable** key and the actual application origin. Restart Next.js.
 4. Provision accounts through Supabase Auth. Insert matching `profiles` rows, then assign `user_roles` to approved users. Do not grant roles based on editable user metadata. There is deliberately no automatic administrator signup.
 5. Have HSE review the risk matrix, contractor rules, approval template, R/I/H labels, validity limits, gas limits and all controls. R/I/H meanings remain undefined. Gas limits start unapproved with no invented thresholds.

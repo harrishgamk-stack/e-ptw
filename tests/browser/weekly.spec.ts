@@ -32,6 +32,7 @@ test("four separate tabs collaborate, HSE activates once, and the Holder signs t
   await signIn(page, "Issuer");
   await page.getByRole("link", { name: "Create permit", exact: true }).click();
   await page.getByLabel("Work title").fill("Weekly warehouse ventilation work");
+  await page.getByLabel("Department").selectOption("Mixing");
   await page.getByLabel("Work location").selectOption("Warehouse A");
   await page
     .getByLabel("Description of work")
@@ -69,7 +70,7 @@ test("four separate tabs collaborate, HSE activates once, and the Holder signs t
     iss = page.locator(".weekly-section-form"),
     hol = holder.locator(".weekly-section-form");
   await Promise.all([
-    req.getByLabel("Company / department").fill("PCG Maintenance"),
+    req.getByLabel("Requester Department").fill("Mixing"),
     iss
       .getByLabel("Emergency / rescue arrangements")
       .fill(
@@ -84,14 +85,15 @@ test("four separate tabs collaborate, HSE activates once, and the Holder signs t
     );
   await req.getByLabel("General work", { exact: true }).check();
   await req.getByText("Risk assessment", { exact: true }).click();
-  await req.getByLabel("Main hazard").fill("Slips and trips");
+  await req.getByRole("textbox", { name: /^Hazard\b/ }).fill("Slips and trips");
   await req.getByLabel("Potential consequence").fill("Minor injury to workers");
+  await req.getByLabel("Who may be affected").fill("Work team");
   await req
-    .getByLabel("Risk control measures")
+    .getByLabel("Controls / additional measures")
     .fill("Demarcate the work area and remove trip hazards.");
-  await req.getByLabel("Person responsible for controls").fill("Demo Issuer");
-  await iss.getByLabel("Safety shoes", { exact: true }).check();
-  await iss.getByLabel("Safety helmet", { exact: true }).check();
+  await req.getByLabel("Responsible person").fill("Demo Issuer");
+  await expect(iss.getByLabel("Safety shoes", { exact: true })).toBeChecked();
+  await expect(iss.getByLabel("Safety helmet", { exact: true })).toBeChecked();
   for (const control of safetyControls)
     await iss.getByLabel(control, { exact: true }).check();
   await hol.getByLabel("Number of workers").fill("2");
@@ -108,9 +110,7 @@ test("four separate tabs collaborate, HSE activates once, and the Holder signs t
       tab.getByText("Your section is saved.", { exact: false }),
     ).toBeVisible();
   shared = await data(page);
-  expect(shared.permits[0].sections.Requester.data.company).toBe(
-    "PCG Maintenance",
-  );
+  expect(shared.permits[0].sections.Requester.data.company).toBe("Mixing");
   expect(shared.permits[0].sections.Holder.data.workerCount).toBe(2);
   expect(shared.permits[0].sections.Issuer.data.generalControls).toHaveLength(
     safetyControls.length,

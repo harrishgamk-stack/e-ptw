@@ -1,4 +1,12 @@
 import { z } from "zod";
+import {
+  companyAssessmentIssues,
+  contractorIssues,
+  specialControls,
+  workRequirements,
+  activityAssessmentIssues,
+} from "./work-policy";
+export { specialControls } from "./work-policy";
 export const statuses = [
   "DRAFT",
   "SUBMITTED",
@@ -42,6 +50,8 @@ export const transitions: Partial<
   COMPLETION_REQUESTED: { CLOSED: "permit.close" },
 };
 export const activities = [
+  "General work",
+  "High Risk Work",
   "Mechanical work",
   "Electrical work",
   "Electrical tools",
@@ -75,6 +85,8 @@ export const ppeOptions = [
   "Gas / vapour / dust filter",
   "Fall protection",
   "Other PPE",
+  "Full-body harness",
+  "Welding gloves",
 ];
 export const safetyControls = [
   "Site rules read and understood",
@@ -87,71 +99,9 @@ export const safetyControls = [
   "Emergency access maintained",
   "Area fenced",
 ];
-export const specialControls: Record<string, string[]> = {
-  "Mechanical work": [
-    "Isolation required",
-    "Zero-energy verification completed",
-    "Release authorization",
-  ],
-  "Electrical work": [
-    "Isolation required",
-    "Zero-energy verification completed",
-    "Release authorization",
-  ],
-  "Hot Work": [
-    "Combustibles removed",
-    "Flammables removed",
-    "Area cleaned",
-    "Fire extinguisher available",
-    "Fire blanket available",
-    "Gas cylinders secured",
-    "Ventilation adequate",
-    "Fire watch assigned",
-    "Production Manager permission approved",
-  ],
-  "Confined Space": [
-    "Energy sources isolated",
-    "LOTO verified",
-    "Ventilation adequate",
-    "Rescue team confirmed",
-    "Communication tested",
-    "Low-voltage lighting",
-    "Suitable electrical equipment",
-    "Entry supervisor verified",
-  ],
-  "Working at height": [
-    "Harness inspected",
-    "Lifeline installed",
-    "Anchor point approved",
-    "Scaffold tagged",
-    "Barricade below",
-    "Rescue plan available",
-    "Competent person verified",
-  ],
-  "Hoisting / lifting": [
-    "Lifting plan approved",
-    "Certified operator",
-    "Rigger verified",
-    "Signalman verified",
-    "Equipment certificate valid",
-    "Barricaded area",
-    "Weather acceptable",
-    "Pre-lift inspection",
-  ],
-  "Environmental impact": [
-    "SDS attached",
-    "Storage arrangements confirmed",
-    "Waste disposal arranged",
-    "Spill protection",
-    "Drain protection",
-    "Dust control",
-    "Noise control",
-    "Odour control",
-    "Air emission control",
-  ],
-};
 export const hazardSchema = z.object({
   id: z.string(),
+  activity: z.string().optional(),
   hazard: z.string().min(3),
   consequence: z.string().min(3),
   affected: z.string().min(2),
@@ -174,7 +124,28 @@ export const workerSchema = z.object({
   inducted: z.boolean(),
   acknowledged: z.boolean(),
 });
+export const contractorSchema = z.object({
+  id: z.string(),
+  name: z.string().max(200),
+  phone: z.string().max(50),
+  safetyInduction: z.boolean(),
+  acknowledged: z.boolean(),
+});
+export const companyAssessmentSchema = z.object({
+  reference: z.string().max(200),
+  assessedBy: z.string().max(200),
+  assessmentDate: z.string(),
+  documentName: z.string().max(300),
+  completed: z.boolean(),
+  activitiesKey: z.string().optional(),
+});
+export type Contractor = z.infer<typeof contractorSchema>;
+export type CompanyAssessment = z.infer<typeof companyAssessmentSchema>;
 export const draftSchema = z.object({
+  requirementsVersion: z.literal(1).optional(),
+  requesterDepartment: z.string().optional(),
+  contractors: z.array(contractorSchema).max(25).optional(),
+  companyRiskAssessment: companyAssessmentSchema.optional(),
   title: z.string(),
   department: z.string(),
   location: z.string(),
@@ -185,22 +156,15 @@ export const draftSchema = z.object({
   end: z.string(),
   description: z.string(),
   purpose: z.string(),
-  reference: z.string(),
   shutdown: z.boolean(),
   impact: z.string(),
   emergency: z.boolean(),
   notes: z.string(),
   requester: z.string(),
-  requesterId: z.string(),
   phone: z.string(),
-  email: z.string(),
   holder: z.string(),
   holderPhone: z.string(),
   contractor: z.string(),
-  contractorApproved: z.boolean(),
-  documentationComplete: z.boolean(),
-  certificateAvailable: z.boolean(),
-  sheComplete: z.boolean(),
   workers: z.array(
     workerSchema.extend({
       name: z.string(),
@@ -264,6 +228,9 @@ export type AuditEvent = {
   reason: string;
 };
 export const emptyDraft: Draft = {
+  requirementsVersion: 1,
+  requesterDepartment: "",
+  contractors: [],
   title: "",
   department: "",
   location: "",
@@ -274,22 +241,15 @@ export const emptyDraft: Draft = {
   end: "",
   description: "",
   purpose: "",
-  reference: "",
   shutdown: false,
   impact: "None",
   emergency: false,
   notes: "",
   requester: "",
-  requesterId: "",
   phone: "",
-  email: "",
   holder: "",
   holderPhone: "",
   contractor: "",
-  contractorApproved: false,
-  documentationComplete: false,
-  certificateAvailable: false,
-  sheComplete: false,
   workers: [],
   activities: [],
   ppe: [],
@@ -335,24 +295,15 @@ export function submissionIssues(d: Draft): string[] {
   if (!d.start || !d.end || new Date(d.end) <= new Date(d.start))
     issues.push("Provide a valid work period with end after start.");
   if (
-    !d.requester ||
-    !d.holder ||
-    !d.contractor ||
-    !d.phone ||
-    !z.email().safeParse(d.email).success
+    !d.requester.trim() ||
+    !d.requesterDepartment?.trim() ||
+    !d.holder.trim() ||
+    !d.phone.trim()
   )
     issues.push(
-      "Complete requester contact, permit holder and contractor details.",
+      "Complete the requester name, department, phone and permit holder.",
     );
-  if (
-    !d.contractorApproved ||
-    !d.documentationComplete ||
-    !d.certificateAvailable ||
-    !d.sheComplete
-  )
-    issues.push(
-      "Contractor approval, documentation, certificate and SHE/PT/RA must be verified.",
-    );
+  issues.push(...contractorIssues(d), ...companyAssessmentIssues(d));
   if (
     !d.workers.length ||
     d.workers.some(
@@ -366,7 +317,10 @@ export function submissionIssues(d: Draft): string[] {
     issues.push(
       "Add inducted workers with complete details and certificates valid through the work period.",
     );
-  if (!d.activities.length || !d.ppe.length)
+  if (
+    !d.activities.length ||
+    !workRequirements(d.activities).ppe.every((p) => d.ppe.includes(p))
+  )
     issues.push("Select work activities and required PPE.");
   if (
     !d.hazards.length ||
@@ -375,6 +329,7 @@ export function submissionIssues(d: Draft): string[] {
     issues.push(
       "Complete at least one risk assessment including controls and responsible person.",
     );
+  if (d.requirementsVersion === 1) issues.push(...activityAssessmentIssues(d));
   if (d.hazards.some((h) => h.residualLikelihood * h.residualSeverity >= 17))
     issues.push(
       "Unresolved extreme residual risk blocks submission. HSE review is required.",
@@ -391,6 +346,15 @@ export function submissionIssues(d: Draft): string[] {
   )
     issues.push(
       "A passing atmospheric test is required for confined space work.",
+    );
+  if (
+    d.activities.includes("Hot Work") &&
+    (!["required", "not-required"].includes(d.special.gasTesting ?? "") ||
+      (d.special.gasTesting === "not-required" &&
+        (d.special.gasJustification ?? "").trim().length < 10))
+  )
+    issues.push(
+      "Record Hot Work gas testing applicability and justification where not required.",
     );
   if (!d.confirmed) issues.push("Confirm the declaration before submission.");
   return issues;

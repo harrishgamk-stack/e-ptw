@@ -1,5 +1,6 @@
 import { AuditEvent, Permit, riskLevel } from "@/lib/domain";
 import { effectiveWeeklyStatus, WeeklyState } from "../weekly/model";
+import { contractorNames } from "@/lib/work-policy";
 
 /** Adapt shared permits for the original HSE dashboard without a second data store. */
 export function hseData(state: WeeklyState, now: Date) {
@@ -21,7 +22,9 @@ export function hseData(state: WeeklyState, now: Date) {
       title: p.title,
       location: p.location,
       department: p.application?.department || "Site operations",
-      contractor: p.sections.Requester.data.company,
+      contractor: p.application?.contractors
+        ? contractorNames(p.application) || "Internal work"
+        : p.sections.Requester.data.company,
       holder:
         state.people.find((person) => person.id === p.members.Holder)?.name ??
         "",

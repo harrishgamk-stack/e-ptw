@@ -11,7 +11,6 @@ export function ApplicationDetails({ application: a }: { application: Draft }) {
             [a.department, a.area].filter(Boolean).join(" · "),
           ],
           ["Purpose of work", a.purpose],
-          ["Work order / reference", a.reference],
           [
             "Production impact",
             `${a.impact} · Shutdown ${a.shutdown ? "required" : "not required"} · ${a.emergency ? "Emergency work" : "Planned work"}`,
@@ -19,26 +18,13 @@ export function ApplicationDetails({ application: a }: { application: Draft }) {
           ["Additional notes", a.notes],
           [
             "Requester contact",
-            [a.requester, a.requesterId, a.phone, a.email]
+            [a.requester, a.requesterDepartment, a.phone]
               .filter(Boolean)
               .join(" · "),
           ],
           [
             "Planned Holder contact",
             [a.holder, a.holderPhone].filter(Boolean).join(" · "),
-          ],
-          [
-            "Contractor verification",
-            [
-              [a.contractorApproved, "Approved contractor"],
-              [a.documentationComplete, "Documentation"],
-              [a.certificateAvailable, "Certificate"],
-              [a.sheComplete, "SHE / PT / RA"],
-            ]
-              .map(
-                ([done, label]) => `${label}: ${done ? "recorded" : "pending"}`,
-              )
-              .join(" · "),
           ],
           ["Toolbox meeting plan", a.toolbox],
         ].map(([key, value]) => (
@@ -48,6 +34,35 @@ export function ApplicationDetails({ application: a }: { application: Draft }) {
           </div>
         ))}
       </dl>
+      <h4>Contractors & Safety Induction</h4>
+      {(a.contractors ?? []).map((c, index) => (
+        <div className="weekly-application-item" key={c.id}>
+          <strong>
+            Contractor {index + 1}: {c.name || "Name pending"}
+          </strong>
+          <p>
+            {c.phone || "Phone pending"} · Safety Induction{" "}
+            {c.safetyInduction ? "completed" : "pending"} · Acknowledgement{" "}
+            {c.acknowledged ? "recorded" : "pending"}
+          </p>
+        </div>
+      ))}
+      {a.companyRiskAssessment && (
+        <div className="weekly-application-item">
+          <strong>Formal company risk assessment</strong>
+          <p>
+            {a.companyRiskAssessment.reference} ·{" "}
+            {a.companyRiskAssessment.assessedBy} ·{" "}
+            {a.companyRiskAssessment.assessmentDate}
+          </p>
+          <p>
+            {a.companyRiskAssessment.documentName} ·{" "}
+            {a.companyRiskAssessment.completed
+              ? "Completed declaration recorded"
+              : "Completion pending"}
+          </p>
+        </div>
+      )}
       <h4>All recorded hazards ({a.hazards.length})</h4>
       {a.hazards.map((h, index) => (
         <div className="weekly-application-item" key={h.id}>

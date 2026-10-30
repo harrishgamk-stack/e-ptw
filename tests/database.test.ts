@@ -1,8 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
 import { validDraft } from "./fixtures";
+import { activityKey, workRequirements } from "../src/lib/work-policy";
+import { specialControls } from "../src/lib/domain";
 test("migration, RLS, permissions, numbering, transition guards and audit immutability", async () => {
   const db = new PGlite();
   try {
@@ -14,13 +16,84 @@ test("migration, RLS, permissions, numbering, transition guards and audit immuta
  create table storage.objects(id uuid primary key,name text,bucket_id text); alter table storage.objects enable row level security;
  create function storage.foldername(text) returns text[] language sql immutable as $$ select string_to_array($1,'/') $$;
  `);
-    await db.exec(
-      await readFile(
-        "supabase/migrations/20261028115944_pcg_foundation.sql",
-        "utf8",
+    for (const file of (await readdir("supabase/migrations"))
+      .filter((name) => name.endsWith(".sql"))
+      .sort())
+      await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
+    await db.exec(await readFile("supabase/seed.sql", "utf8"));
+    // Verify the saved database validation without adding back removed form fields.
+    const complete = validDraft();
+    await db.query("select private.validate_submission($1::jsonb)", [
+      JSON.stringify(complete),
+    ]);
+    await assert.rejects(
+      db.query("select private.validate_submission($1::jsonb)", [
+        JSON.stringify({
+          ...complete,
+          contractors: complete.contractors!.map((c) => ({
+            ...c,
+            acknowledged: false,
+          })),
+        }),
+      ]),
+      /Safety Induction/,
+    );
+    const highRisk = structuredClone(complete);
+    highRisk.activities = ["Hot Work"];
+    highRisk.hazards[0].activity = "Hot Work";
+    highRisk.ppe = workRequirements(highRisk.activities).ppe;
+    highRisk.special = {
+      gasTesting: "not-required",
+      gasJustification:
+        "No flammable atmosphere identified in the isolated work area.",
+    };
+    for (const control of specialControls["Hot Work"])
+      highRisk.special[`Hot Work:${control}`] = "yes";
+    await assert.rejects(
+      db.query("select private.validate_submission($1::jsonb)", [
+        JSON.stringify(highRisk),
+      ]),
+      /Formal company risk assessment required/,
+    );
+    highRisk.companyRiskAssessment = {
+      reference: "PCG-CRA-TEST",
+      assessedBy: "Company assessor",
+      assessmentDate: "2026-10-28",
+      documentName: "company-ra.pdf",
+      completed: true,
+      activitiesKey: activityKey(highRisk.activities),
+    };
+    highRisk.documents = [
+      {
+        name: "company-ra.pdf",
+        type: "Company risk assessment",
+        path: "local-demo-metadata",
+        expiry: "",
+      },
+    ];
+    await db.query("select private.validate_submission($1::jsonb)", [
+      JSON.stringify(highRisk),
+    ]);
+    await assert.rejects(
+      db.query("select private.validate_submission($1::jsonb)", [
+        JSON.stringify({ ...highRisk, documents: [] }),
+      ]),
+      /assessment document required/,
+    );
+    const functionSecurity = await db.query<{
+      prosecdef: boolean;
+      allowed: boolean;
+      proconfig: string[];
+    }>(
+      "select p.prosecdef, p.proconfig, has_function_privilege('anon',p.oid,'EXECUTE') as allowed from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname='validate_submission'",
+    );
+    assert.equal(functionSecurity.rows[0].prosecdef, false);
+    assert.equal(functionSecurity.rows[0].allowed, false);
+    assert.ok(
+      functionSecurity.rows[0].proconfig.some((c) =>
+        c.startsWith("search_path="),
       ),
     );
-    await db.exec(await readFile("supabase/seed.sql", "utf8"));
     const user = "10000000-0000-4000-8000-000000000001",
       other = "10000000-0000-4000-8000-000000000002";
     await db.exec(

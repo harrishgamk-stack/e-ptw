@@ -22,13 +22,28 @@ import {
   draftSchema,
   emptyDraft,
   ppeOptions,
-  riskLevel,
   safetyControls,
   specialControls,
   submissionIssues,
 } from "@/lib/domain";
 import { useStore } from "./store";
-import { Field, Risk, TypeIcon } from "./ui";
+import { HazardFields } from "./hazard-fields";
+import { ContractorFields } from "./contractor-fields";
+import {
+  AssessmentFields,
+  GeneratedRequirements,
+  documentIssue,
+  emptyAssessment,
+} from "./activity-requirements";
+import {
+  companyAssessmentIssues,
+  contractorNames,
+  departments,
+  selectActivities,
+  workRequirements,
+  prepareDraftForForm,
+} from "@/lib/work-policy";
+import { Field, TypeIcon } from "./ui";
 import { supabaseBrowser } from "@/lib/supabase/client";
 const steps = [
   "Work Details",
@@ -64,13 +79,7 @@ function WorkFields({ form: { register, watch } }: FieldsProps) {
       <Field label="Department" required>
         <select {...register("department")}>
           <option value="">Select department</option>
-          {[
-            "Engineering",
-            "Maintenance",
-            "Facilities",
-            "Operations",
-            "HSE",
-          ].map((d) => (
+          {departments.map((d) => (
             <option key={d}>{d}</option>
           ))}
         </select>
@@ -98,12 +107,6 @@ function WorkFields({ form: { register, watch } }: FieldsProps) {
       )}
       <Field label="Work area">
         <input {...register("area")} placeholder="Specific work area" />
-      </Field>
-      <Field label="Work order / reference">
-        <input
-          {...register("reference")}
-          placeholder="Optional reference number"
-        />
       </Field>
       <Field label="Planned start" required>
         <input type="datetime-local" {...register("start")} />
@@ -157,14 +160,20 @@ function PeopleFields({ form: { register, watch, setValue } }: FieldsProps) {
         <Field label="Requester name" required>
           <input {...register("requester")} />
         </Field>
-        <Field label="Employee ID">
-          <input {...register("requesterId")} />
+        <Field label="Requester Department" required>
+          <input
+            {...register("requesterDepartment")}
+            list="pcg-requester-departments"
+            placeholder="e.g. Mixing, Blowing or Extrusion"
+          />
+          <datalist id="pcg-requester-departments">
+            {departments.map((d) => (
+              <option key={d} value={d} />
+            ))}
+          </datalist>
         </Field>
         <Field label="Phone" required>
           <input type="tel" {...register("phone")} />
-        </Field>
-        <Field label="Email" required>
-          <input type="email" {...register("email")} />
         </Field>
         <Field label="Permit holder" required>
           <input {...register("holder")} />
@@ -172,36 +181,21 @@ function PeopleFields({ form: { register, watch, setValue } }: FieldsProps) {
         <Field label="Holder phone">
           <input type="tel" {...register("holderPhone")} />
         </Field>
-        <Field label="Contractor / company" required>
-          <input
-            {...register("contractor")}
-            placeholder="Registered company name"
-          />
-        </Field>
       </div>
-      <h3 className="form-section-title">Contractor verification</h3>
-      <div className="checks-grid">
-        {(
-          [
-            "contractorApproved",
-            "documentationComplete",
-            "certificateAvailable",
-            "sheComplete",
-          ] as const
-        ).map((key, i) => (
-          <label className="check" key={key}>
-            <input type="checkbox" {...register(key)} />
-            {
-              [
-                "Approved contractor verified",
-                "Required documentation complete",
-                "Valid certificate available",
-                "SHE / PT / RA completed",
-              ][i]
-            }
-          </label>
-        ))}
-      </div>
+      <h3 className="form-section-title">Contractors & Safety Induction</h3>
+      <ContractorFields
+        value={watch("contractors") ?? []}
+        onChange={(contractors) => {
+          setValue("contractors", contractors, { shouldDirty: true });
+          setValue(
+            "contractor",
+            contractors
+              .map((c) => c.name.trim())
+              .filter(Boolean)
+              .join("; "),
+          );
+        }}
+      />
       <h3 className="form-section-title">
         Workers / permit users ({workers.length})
       </h3>
@@ -279,7 +273,7 @@ function PeopleFields({ form: { register, watch, setValue } }: FieldsProps) {
               id: crypto.randomUUID(),
               name: "",
               identity: "",
-              company: watch("contractor"),
+              company: watch("contractors")?.[0]?.name || watch("department"),
               trade: "",
               phone: "",
               competency: "",
@@ -296,7 +290,9 @@ function PeopleFields({ form: { register, watch, setValue } }: FieldsProps) {
     </>
   );
 }
-function RiskFields({ form: { register, watch, setValue } }: FieldsProps) {
+function RiskFields({ form }: FieldsProps) {
+  const { watch, setValue, getValues } = form;
+  const [assessmentError, setAssessmentError] = useState("");
   const hazards = watch("hazards");
   return (
     <>
@@ -305,132 +301,46 @@ function RiskFields({ form: { register, watch, setValue } }: FieldsProps) {
         Assess initial and residual risk. Extreme residual risk blocks
         submission. Risk limits require PCG HSE approval before live use.
       </div>
-      {hazards.map((h, i) => (
-        <div className="risk-card" key={h.id}>
-          <div className="risk-card-head">
-            <h3>Hazard {i + 1}</h3>
-            <button
-              type="button"
-              aria-label={`Remove hazard ${i + 1}`}
-              onClick={() =>
-                setValue(
-                  "hazards",
-                  hazards.filter((x) => x.id !== h.id),
-                )
-              }
-            >
-              <Trash2 size={15} />
-            </button>
-          </div>
-          <div className="form-grid">
-            {(
+      {workRequirements(watch("activities"), hazards).formalAssessment && (
+        <AssessmentFields
+          activities={watch("activities")}
+          value={watch("companyRiskAssessment")}
+          onChange={(r) =>
+            setValue("companyRiskAssessment", r, { shouldDirty: true })
+          }
+          error={assessmentError}
+          onDocument={(file) => {
+            const issue = documentIssue(file);
+            setAssessmentError(issue);
+            if (issue) return;
+            const r = getValues("companyRiskAssessment") ?? emptyAssessment;
+            setValue(
+              "companyRiskAssessment",
+              { ...r, documentName: file.name },
+              { shouldDirty: true },
+            );
+            setValue(
+              "documents",
               [
-                "hazard",
-                "consequence",
-                "affected",
-                "controls",
-                "responsible",
-              ] as const
-            ).map((f, j) => (
-              <Field
-                label={
-                  [
-                    "Hazard",
-                    "Potential consequence",
-                    "Who may be affected",
-                    "Controls / additional measures",
-                    "Responsible person",
-                  ][j]
-                }
-                key={f}
-                required
-              >
-                <input {...register(`hazards.${i}.${f}`)} />
-              </Field>
-            ))}
-            {(
-              [
-                "likelihood",
-                "severity",
-                "residualLikelihood",
-                "residualSeverity",
-              ] as const
-            ).map((f, j) => (
-              <Field
-                label={
-                  [
-                    "Initial likelihood",
-                    "Initial severity",
-                    "Residual likelihood",
-                    "Residual severity",
-                  ][j]
-                }
-                key={f}
-              >
-                <select
-                  {...register(`hazards.${i}.${f}`, { valueAsNumber: true })}
-                >
-                  {[1, 2, 3, 4, 5].map((v) => (
-                    <option key={v} value={v}>
-                      {v} —{" "}
-                      {j % 2 === 0
-                        ? [
-                            "Rare",
-                            "Unlikely",
-                            "Possible",
-                            "Likely",
-                            "Almost certain",
-                          ][v - 1]
-                        : [
-                            "Negligible",
-                            "Minor",
-                            "Moderate",
-                            "Major",
-                            "Catastrophic",
-                          ][v - 1]}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            ))}
-          </div>
-          <div className="score-display">
-            <span>
-              Initial: <b>{h.likelihood * h.severity}</b>
-            </span>
-            <Risk risk={riskLevel(h.likelihood * h.severity)} />
-            <ArrowRight size={13} />
-            <span>
-              Residual: <b>{h.residualLikelihood * h.residualSeverity}</b>
-            </span>
-            <Risk risk={riskLevel(h.residualLikelihood * h.residualSeverity)} />
-          </div>
-        </div>
-      ))}
-      <button
-        type="button"
-        className="button secondary"
-        onClick={() =>
-          setValue("hazards", [
-            ...hazards,
-            {
-              id: crypto.randomUUID(),
-              hazard: "",
-              consequence: "",
-              affected: "",
-              controls: "",
-              responsible: "",
-              likelihood: 3,
-              severity: 3,
-              residualLikelihood: 2,
-              residualSeverity: 2,
-            },
-          ])
+                ...getValues("documents").filter((d) => d.name !== file.name),
+                {
+                  name: file.name,
+                  type: "Company risk assessment",
+                  path: "local-demo-metadata",
+                  expiry: "",
+                },
+              ],
+              { shouldDirty: true },
+            );
+          }}
+        />
+      )}
+      <HazardFields
+        value={hazards}
+        onChange={(hazards) =>
+          setValue("hazards", hazards, { shouldDirty: true })
         }
-      >
-        <Plus size={15} />
-        Add hazard
-      </button>
+      />
     </>
   );
 }
@@ -513,6 +423,7 @@ function SpecialFields({ form: { watch, setValue } }: FieldsProps) {
   };
   return (
     <>
+      <GeneratedRequirements activities={selected} />
       {!selected.some((a) => specialControls[a]) && (
         <div className="inline-notice">
           <ShieldCheck size={17} />
@@ -535,19 +446,19 @@ function SpecialFields({ form: { watch, setValue } }: FieldsProps) {
                 </Field>
               ))}
             </div>
-            <div className="checks-grid" style={{ marginTop: 20 }}>
-              {specialControls[a].map((c) => (
-                <label className="check" key={c}>
-                  <input
-                    type="checkbox"
-                    checked={special[`${a}:${c}`] === "yes"}
-                    onChange={(e) =>
-                      set(`${a}:${c}`, e.target.checked ? "yes" : "no")
-                    }
-                  />
-                  {c}
-                </label>
-              ))}
+            <div className="generated-control-summary">
+              <p>
+                Automatically activated by Work Activities. Confirm these
+                controls under Safety Requirements; no permit selection is
+                needed here.
+              </p>
+              <ul>
+                {specialControls[a].map((c) => (
+                  <li key={c}>
+                    {special[`${a}:${c}`] === "yes" ? "✓" : "○"} {c}
+                  </li>
+                ))}
+              </ul>
             </div>
             {a === "Confined Space" && (
               <div style={{ marginTop: 20 }}>
@@ -626,7 +537,11 @@ export function Wizard({
           if (local) {
             const saved = JSON.parse(local);
             if (!shared || saved.revision === shared.revision) {
-              reset(draftSchema.parse(shared ? saved.draft : saved));
+              reset(
+                prepareDraftForForm(
+                  draftSchema.parse(shared ? saved.draft : saved),
+                ),
+              );
               recovered = true;
               if (shared) setLastSaved("Saved draft restored on this device");
             } else setLastSaved("Permit changed. Loaded the latest work plan.");
@@ -635,8 +550,8 @@ export function Wizard({
           /* Ignore obsolete local draft. */
         }
       }
-      if (!recovered && permit?.draft) reset(permit.draft);
-      if (!recovered && shared) reset(shared.initialDraft);
+      if (!recovered && permit?.draft) reset(prepareDraftForForm(permit.draft));
+      if (!recovered && shared) reset(prepareDraftForForm(shared.initialDraft));
       restored.current = true;
     }
   }, [ready, editId, permits, demo, reset, storageKey, shared]);
@@ -664,6 +579,22 @@ export function Wizard({
     };
   }, [watch, demo, storageKey, sharedMode, sharedRevision]);
   const toggle = (field: "activities" | "ppe" | "controls", value: string) => {
+    if (field === "activities") {
+      const current = getValues();
+      const selected = current.activities.includes(value)
+        ? current.activities.filter((a) => a !== value)
+        : [...current.activities, value];
+      const generated = selectActivities(current, selected);
+      for (const key of [
+        "activities",
+        "ppe",
+        "hazards",
+        "special",
+        "requirementsVersion",
+      ] as const)
+        setValue(key, generated[key], { shouldDirty: true });
+      return;
+    }
     const current = getValues(field);
     setValue(
       field,
@@ -687,7 +618,20 @@ export function Wizard({
         );
         return;
       }
-      const savedId = await save(getValues(), idRef.current);
+      const current = getValues();
+      const savedId = await save(
+        {
+          ...current,
+          contractor: contractorNames(current),
+          ppe: [
+            ...new Set([
+              ...current.ppe,
+              ...workRequirements(current.activities).ppe,
+            ]),
+          ],
+        },
+        idRef.current,
+      );
       idRef.current = savedId;
       setId(savedId);
       setLastSaved(
@@ -710,6 +654,9 @@ export function Wizard({
           throw new Error(
             "Confirm the work plan before creating the shared permit.",
           );
+        const assessmentIssues = companyAssessmentIssues(getValues());
+        if (assessmentIssues.length)
+          throw new Error(assessmentIssues.join("\n"));
         const permitId = await shared.onSubmit(getValues());
         submitted.current = true;
         localStorage.removeItem(storageKey);
@@ -723,7 +670,16 @@ export function Wizard({
       }
       return;
     }
-    const issues = submissionIssues(getValues());
+    const current = getValues();
+    const issues = submissionIssues({
+      ...current,
+      ppe: [
+        ...new Set([
+          ...current.ppe,
+          ...workRequirements(current.activities).ppe,
+        ]),
+      ],
+    });
     if (issues.length) {
       setError(issues.join("\n"));
       return;
@@ -852,21 +808,23 @@ export function Wizard({
           {step === 2 && (
             <>
               <div className="activity-choices">
-                {(shared ? ["General work", ...activities] : activities).map(
-                  (a) => (
-                    <button
-                      type="button"
-                      className={`activity-choice ${data.activities.includes(a) ? "chosen" : ""}`}
-                      key={a}
-                      onClick={() => toggle("activities", a)}
-                    >
-                      <TypeIcon type={a} />
-                      {a}
-                      {data.activities.includes(a) && <Check size={13} />}
-                    </button>
-                  ),
-                )}
+                {activities.map((a) => (
+                  <button
+                    type="button"
+                    className={`activity-choice ${data.activities.includes(a) ? "chosen" : ""}`}
+                    key={a}
+                    onClick={() => toggle("activities", a)}
+                  >
+                    <TypeIcon type={a} />
+                    {a}
+                    {data.activities.includes(a) && <Check size={13} />}
+                  </button>
+                ))}
               </div>
+              <GeneratedRequirements
+                activities={data.activities}
+                hazards={data.hazards}
+              />
               <div className="inline-notice" style={{ marginTop: 22 }}>
                 <ShieldCheck size={17} />
                 Specialist controls are required for machinery isolation, hot
@@ -883,7 +841,13 @@ export function Wizard({
                   <label key={p} className="check">
                     <input
                       type="checkbox"
-                      checked={data.ppe.includes(p)}
+                      checked={
+                        workRequirements(data.activities).ppe.includes(p) ||
+                        data.ppe.includes(p)
+                      }
+                      disabled={workRequirements(data.activities).ppe.includes(
+                        p,
+                      )}
                       onChange={() => toggle("ppe", p)}
                     />
                     {p}
@@ -903,6 +867,62 @@ export function Wizard({
                   </label>
                 ))}
               </div>
+              {workRequirements(data.activities, data.hazards).permits.map(
+                (permit) => (
+                  <section
+                    className="generated-control-group"
+                    key={permit.activity}
+                  >
+                    <h3>{permit.title} — required controls</h3>
+                    <div className="checks-grid">
+                      {permit.controls.map((c) => (
+                        <label className="check" key={c}>
+                          <input
+                            type="checkbox"
+                            checked={
+                              data.special[`${permit.activity}:${c}`] === "yes"
+                            }
+                            onChange={(e) =>
+                              setValue(
+                                "special",
+                                {
+                                  ...getValues("special"),
+                                  [`${permit.activity}:${c}`]: e.target.checked
+                                    ? "yes"
+                                    : "no",
+                                },
+                                { shouldDirty: true },
+                              )
+                            }
+                          />
+                          {c}
+                        </label>
+                      ))}
+                    </div>
+                    {permit.activity === "Hot Work" && (
+                      <div className="form-grid">
+                        <Field label="Hot Work gas testing" required>
+                          <select {...register("special.gasTesting")}>
+                            <option value="">Select applicability</option>
+                            <option value="required">Gas test required</option>
+                            <option value="not-required">
+                              Not required — justification recorded
+                            </option>
+                          </select>
+                        </Field>
+                        {data.special.gasTesting === "not-required" && (
+                          <Field
+                            label="Gas testing not required — justification"
+                            required
+                          >
+                            <input {...register("special.gasJustification")} />
+                          </Field>
+                        )}
+                      </div>
+                    )}
+                  </section>
+                ),
+              )}
               <div style={{ marginTop: 24 }}>
                 {shared && (
                   <Field label="Emergency / rescue arrangements">
@@ -965,6 +985,7 @@ export function Wizard({
                       <select {...register(`documents.${i}.type`)}>
                         {[
                           "Supporting document",
+                          "Company risk assessment",
                           "Risk assessment",
                           "Method statement",
                           "SDS",
@@ -1006,7 +1027,7 @@ export function Wizard({
                 ],
                 [
                   "People",
-                  `${data.holder} · ${data.contractor} · ${data.workers.length} workers`,
+                  `${data.holder} · ${contractorNames(data) || "Internal work"} · ${data.workers.length} workers`,
                 ],
                 ["Activities", data.activities.join(", ")],
                 ["Risk assessment", `${data.hazards.length} hazards recorded`],

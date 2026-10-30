@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validDraft } from "./fixtures";
+import { activityKey } from "../src/lib/work-policy";
 import { dayOne, demoPeople } from "./weekly-fixture";
 import { applicationInput } from "../src/features/weekly/application";
 import {
@@ -126,6 +127,22 @@ test("role edits update the detailed plan without losing additional hazards or d
 test("specialist fields stay consistent between both forms and every hazard is included in signing checks", async () => {
   const d = plan();
   d.activities = ["Hot Work"];
+  d.hazards[0].activity = "Hot Work";
+  d.hazards[1].activity = undefined;
+  d.companyRiskAssessment = {
+    reference: "CRA-HOT-001",
+    assessedBy: "Company assessor",
+    assessmentDate: "2026-10-28",
+    documentName: "company-ra.pdf",
+    completed: true,
+    activitiesKey: activityKey(d.activities),
+  };
+  d.documents.push({
+    name: "company-ra.pdf",
+    type: "Company risk assessment",
+    path: "local-demo-metadata",
+    expiry: "",
+  });
   d.special["Hot Work:Fire watch person"] = "Original Fire Watch";
   d.hazards[1].residualLikelihood = 5;
   d.hazards[1].residualSeverity = 5;

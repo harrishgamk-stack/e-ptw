@@ -236,7 +236,6 @@ export function PermitDetail({
                       ? "Signed out"
                       : "See work session history",
                   ],
-                  ["Work order", p.draft?.reference ?? "Not recorded"],
                   ["Equipment", p.draft?.equipment ?? "Refer to work scope"],
                 ].map(([k, v]) => (
                   <div key={k}>

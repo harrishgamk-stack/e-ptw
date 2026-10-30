@@ -103,6 +103,24 @@ export function HseWorkspace({
 }) {
   const { state, now } = useWeekly();
   const source = hseData(state, now);
+  const contractors = state.permits
+    .flatMap((p) =>
+      (
+        p.application?.contractors ??
+        (p.sections.Requester.data.company
+          ? [
+              {
+                id: p.id,
+                name: p.sections.Requester.data.company,
+                phone: "",
+                safetyInduction: false,
+                acknowledged: false,
+              },
+            ]
+          : [])
+      ).map((contractor) => ({ ...contractor, permitId: p.id })),
+    )
+    .filter((c) => c.name.trim());
   const rows =
     section === "approvals"
       ? source.permits.filter((p) => p.status === "PENDING_APPROVAL")
@@ -284,23 +302,44 @@ export function HseWorkspace({
           {section === "contractors" && (
             <section className="panel">
               <SectionTitle title="Companies on shared permits" />
-              {Array.from(
-                new Set(
-                  source.permits.map((p) => p.contractor).filter(Boolean),
+              {Array.from(new Set(contractors.map((c) => c.name))).map(
+                (company) => (
+                  <div key={company} className="hse-monitor-row">
+                    <strong>{company}</strong>
+                    <div>
+                      <p>
+                        {[
+                          ...new Set(
+                            contractors
+                              .filter((c) => c.name === company)
+                              .map((c) => c.phone)
+                              .filter(Boolean),
+                          ),
+                        ].join(" · ") || "Contact not recorded"}
+                      </p>
+                      <p>
+                        Safety Induction / acknowledgement:{" "}
+                        {contractors
+                          .filter((c) => c.name === company)
+                          .every((c) => c.safetyInduction && c.acknowledged)
+                          ? "Completed"
+                          : "Pending"}
+                      </p>
+                    </div>
+                    <span>
+                      {
+                        new Set(
+                          contractors
+                            .filter((c) => c.name === company)
+                            .map((c) => c.permitId),
+                        ).size
+                      }{" "}
+                      permits
+                    </span>
+                  </div>
                 ),
-              ).map((company) => (
-                <div key={company} className="hse-monitor-row">
-                  <strong>{company}</strong>
-                  <span>
-                    {
-                      source.permits.filter((p) => p.contractor === company)
-                        .length
-                    }{" "}
-                    permits
-                  </span>
-                </div>
-              ))}
-              {!source.permits.some((p) => p.contractor) && (
+              )}
+              {!contractors.length && (
                 <Empty
                   title="No companies recorded yet"
                   description="Requester company details appear here after their section is saved."

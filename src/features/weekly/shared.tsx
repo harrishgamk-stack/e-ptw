@@ -17,6 +17,7 @@ import {
 } from "./model";
 import { useWeekly } from "./store";
 import { ApplicationDetails } from "./application-details";
+import { GeneratedPermits } from "./generated-permits";
 export function SharedQr({ permit }: { permit: WeeklyPermit }) {
   const [qr, setQr] = useState(""),
     [copied, setCopied] = useState(false);
@@ -133,6 +134,7 @@ export function SharedSummary({
         Review the full shared permit <span>Revision {permit.revision}</span>
       </summary>
       <div className="weekly-summary-body">
+        <GeneratedPermits permit={permit} />
         {permit.application && (
           <ApplicationDetails application={permit.application} />
         )}

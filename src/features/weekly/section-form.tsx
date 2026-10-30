@@ -10,7 +10,16 @@ import {
 } from "@/lib/domain";
 import { PartyData, PartyRole, WeeklyPermit } from "./model";
 import { useWeekly } from "./store";
-const activityOptions = ["General work", ...activities];
+import { HazardFields } from "@/components/hazard-fields";
+import { ContractorFields } from "@/components/contractor-fields";
+import {
+  AssessmentFields,
+  GeneratedRequirements,
+  documentIssue,
+  emptyAssessment,
+} from "@/components/activity-requirements";
+import { activityHazards, workRequirements } from "@/lib/work-policy";
+const activityOptions = activities;
 export function SectionForm({
   permit,
   role,
@@ -26,20 +35,62 @@ export function SectionForm({
     [message, setMessage] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
+  const versioned =
+    permit.requirementsVersion === 1 ||
+    permit.application?.requirementsVersion === 1;
+  const required = workRequirements(
+    permit.sections.Requester.data.activities,
+    permit.application?.hazards,
+  );
   function set<K extends keyof PartyData>(key: K, value: PartyData[K]) {
     setData((previous) => ({ ...previous, [key]: value }));
+    setMessage("");
+  }
+  function updateHazards(
+    hazards: NonNullable<PartyData["hazards"]>,
+    selected = data.activities,
+  ) {
+    const h = hazards[0];
+    setData((previous) => ({
+      ...previous,
+      activities: selected,
+      hazards,
+      hazard: h?.hazard ?? "",
+      consequence: h?.consequence ?? "",
+      riskControls: h?.controls ?? "",
+      responsible: h?.responsible ?? "",
+      likelihood: h?.likelihood ?? 3,
+      severity: h?.severity ?? 3,
+      residualLikelihood: h?.residualLikelihood ?? 2,
+      residualSeverity: h?.residualSeverity ?? 2,
+      ...(previous.companyRiskAssessment && selected !== previous.activities
+        ? {
+            companyRiskAssessment: {
+              ...previous.companyRiskAssessment,
+              completed: false,
+            },
+          }
+        : {}),
+    }));
     setMessage("");
   }
   const toggle = (
     key: "activities" | "ppe" | "generalControls",
     value: string,
-  ) =>
-    set(
-      key,
-      data[key].includes(value)
-        ? data[key].filter((v) => v !== value)
-        : [...data[key], value],
-    );
+  ) => {
+    const next = data[key].includes(value)
+      ? data[key].filter((v) => v !== value)
+      : [...data[key], value];
+    if (key === "activities" && versioned)
+      updateHazards(
+        activityHazards(
+          data.hazards ?? permit.application?.hazards ?? [],
+          next,
+        ),
+        next,
+      );
+    else set(key, next);
+  };
   const special = (key: string, value: string) =>
     set("special", { ...data.special, [key]: value });
   const stale = base !== permit.sections[role].revision;
@@ -59,6 +110,11 @@ export function SectionForm({
             data,
           });
           setBase(updated.sections[role].revision);
+          setData((previous) =>
+            JSON.stringify(previous) === JSON.stringify(data)
+              ? structuredClone(updated.sections[role].data)
+              : previous,
+          );
           setMessage(
             "Your section is saved. The other parties can see it in their tabs.",
           );
@@ -89,10 +145,22 @@ export function SectionForm({
       {role === "Requester" && (
         <>
           <div className="weekly-form-grid">
-            <Field label="Company / department" required>
+            <Field
+              label={
+                versioned ? "Requester Department" : "Company / department"
+              }
+              required
+            >
               <input
-                value={data.company}
-                onChange={(e) => set("company", e.target.value)}
+                value={
+                  versioned ? (data.requesterDepartment ?? "") : data.company
+                }
+                onChange={(e) =>
+                  set(
+                    versioned ? "requesterDepartment" : "company",
+                    e.target.value,
+                  )
+                }
               />
             </Field>
             <Field label="Machinery / equipment">
@@ -111,6 +179,12 @@ export function SectionForm({
               </Field>
             </div>
           </div>
+          {versioned && (
+            <ContractorFields
+              value={data.contractors ?? []}
+              onChange={(contractors) => set("contractors", contractors)}
+            />
+          )}
           <h3>What activities are involved?</h3>
           <div className="weekly-choice-grid">
             {activityOptions.map((a) => (
@@ -127,71 +201,107 @@ export function SectionForm({
               </label>
             ))}
           </div>
+          {versioned && (
+            <GeneratedRequirements
+              activities={data.activities}
+              hazards={data.hazards ?? permit.application?.hazards}
+            />
+          )}
+          {versioned &&
+            workRequirements(
+              data.activities,
+              data.hazards ?? permit.application?.hazards,
+            ).formalAssessment && (
+              <AssessmentFields
+                activities={data.activities}
+                value={data.companyRiskAssessment}
+                onChange={(r) => set("companyRiskAssessment", r)}
+                error={error}
+                onDocument={(file) => {
+                  const issue = documentIssue(file);
+                  setError(issue);
+                  if (!issue)
+                    set("companyRiskAssessment", {
+                      ...(data.companyRiskAssessment ?? emptyAssessment),
+                      documentName: file.name,
+                    });
+                }}
+              />
+            )}
           <details className="weekly-disclosure">
             <summary>Risk assessment</summary>
-            <div className="weekly-form-grid">
-              <Field label="Main hazard" required>
-                <input
-                  value={data.hazard}
-                  onChange={(e) => set("hazard", e.target.value)}
-                  placeholder="e.g. Unexpected movement of equipment"
-                />
-              </Field>
-              <Field label="Potential consequence" required>
-                <input
-                  value={data.consequence}
-                  onChange={(e) => set("consequence", e.target.value)}
-                />
-              </Field>
-              <div className="wide">
-                <Field label="Risk control measures" required>
-                  <textarea
-                    value={data.riskControls}
-                    onChange={(e) => set("riskControls", e.target.value)}
-                  />
-                </Field>
-              </div>
-              <Field label="Person responsible for controls" required>
-                <input
-                  value={data.responsible}
-                  onChange={(e) => set("responsible", e.target.value)}
-                />
-              </Field>
-              {(
-                [
-                  "likelihood",
-                  "severity",
-                  "residualLikelihood",
-                  "residualSeverity",
-                ] as const
-              ).map((key, i) => (
-                <Field
-                  key={key}
-                  label={
+            {versioned ? (
+              <HazardFields
+                value={data.hazards ?? permit.application?.hazards ?? []}
+                onChange={updateHazards}
+              />
+            ) : (
+              <>
+                <div className="weekly-form-grid">
+                  <Field label="Main hazard" required>
+                    <input
+                      value={data.hazard}
+                      onChange={(e) => set("hazard", e.target.value)}
+                      placeholder="e.g. Unexpected movement of equipment"
+                    />
+                  </Field>
+                  <Field label="Potential consequence" required>
+                    <input
+                      value={data.consequence}
+                      onChange={(e) => set("consequence", e.target.value)}
+                    />
+                  </Field>
+                  <div className="wide">
+                    <Field label="Risk control measures" required>
+                      <textarea
+                        value={data.riskControls}
+                        onChange={(e) => set("riskControls", e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                  <Field label="Person responsible for controls" required>
+                    <input
+                      value={data.responsible}
+                      onChange={(e) => set("responsible", e.target.value)}
+                    />
+                  </Field>
+                  {(
                     [
-                      "Initial likelihood",
-                      "Initial severity",
-                      "Residual likelihood",
-                      "Residual severity",
-                    ][i]
-                  }
-                >
-                  <select
-                    value={data[key]}
-                    onChange={(e) => set(key, Number(e.target.value))}
-                  >
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <option key={n}>{n}</option>
-                    ))}
-                  </select>
-                </Field>
-              ))}
-            </div>
-            <p className="weekly-muted">
-              Initial score {data.likelihood * data.severity} · Residual score{" "}
-              {data.residualLikelihood * data.residualSeverity}. An extreme
-              residual score (17–25) blocks signing.
-            </p>
+                      "likelihood",
+                      "severity",
+                      "residualLikelihood",
+                      "residualSeverity",
+                    ] as const
+                  ).map((key, i) => (
+                    <Field
+                      key={key}
+                      label={
+                        [
+                          "Initial likelihood",
+                          "Initial severity",
+                          "Residual likelihood",
+                          "Residual severity",
+                        ][i]
+                      }
+                    >
+                      <select
+                        value={data[key]}
+                        onChange={(e) => set(key, Number(e.target.value))}
+                      >
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <option key={n}>{n}</option>
+                        ))}
+                      </select>
+                    </Field>
+                  ))}
+                </div>
+                <p className="weekly-muted">
+                  Initial score {data.likelihood * data.severity} · Residual
+                  score {data.residualLikelihood * data.residualSeverity}. An
+                  extreme residual score (17–25) blocks signing.
+                </p>
+              </>
+            )}
           </details>
         </>
       )}
@@ -199,11 +309,17 @@ export function SectionForm({
         <>
           <h3>Required PPE</h3>
           <div className="weekly-check-grid">
-            {ppeOptions.map((p) => (
+            {[
+              ...new Set([...ppeOptions, ...(versioned ? required.ppe : [])]),
+            ].map((p) => (
               <label className="check" key={p}>
                 <input
                   type="checkbox"
-                  checked={data.ppe.includes(p)}
+                  checked={
+                    (versioned && required.ppe.includes(p)) ||
+                    data.ppe.includes(p)
+                  }
+                  disabled={versioned && required.ppe.includes(p)}
                   onChange={() => toggle("ppe", p)}
                 />
                 {p}
@@ -230,6 +346,36 @@ export function SectionForm({
               placeholder="Emergency contacts, assembly point and rescue arrangements."
             />
           </Field>
+          {versioned &&
+            permit.sections.Requester.data.activities.includes("Hot Work") && (
+              <div className="weekly-form-grid">
+                <Field label="Hot Work gas testing" required>
+                  <select
+                    value={data.special.gasTesting ?? ""}
+                    onChange={(e) => special("gasTesting", e.target.value)}
+                  >
+                    <option value="">Select applicability</option>
+                    <option value="required">Gas test required</option>
+                    <option value="not-required">
+                      Not required — justification recorded
+                    </option>
+                  </select>
+                </Field>
+                {data.special.gasTesting === "not-required" && (
+                  <Field
+                    label="Gas testing not required — justification"
+                    required
+                  >
+                    <input
+                      value={data.special.gasJustification ?? ""}
+                      onChange={(e) =>
+                        special("gasJustification", e.target.value)
+                      }
+                    />
+                  </Field>
+                )}
+              </div>
+            )}
           {permit.sections.Requester.data.activities
             .filter((a) => specialControls[a])
             .map((a) => (

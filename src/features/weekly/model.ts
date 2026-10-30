@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { Draft, draftSchema } from "@/lib/domain";
+import {
+  Draft,
+  draftSchema,
+  contractorSchema,
+  companyAssessmentSchema,
+} from "@/lib/domain";
 
 export const partyRoles = ["Requester", "Issuer", "Holder"] as const;
 export type PartyRole = (typeof partyRoles)[number];
@@ -12,8 +17,12 @@ export type Person = {
   role: Role;
 };
 export const partySchema = z.object({
+  requesterDepartment: z.string().max(200).optional(),
+  contractors: z.array(contractorSchema).max(25).optional(),
+  companyRiskAssessment: companyAssessmentSchema.optional(),
+  hazards: draftSchema.shape.hazards.optional(),
   scope: z.string().max(5000),
-  company: z.string().max(200),
+  company: z.string().max(5200),
   equipment: z.string().max(500),
   activities: z.array(z.string()).max(25),
   hazard: z.string().max(2000),
@@ -37,6 +46,7 @@ export const partySchema = z.object({
 });
 export type PartyData = z.infer<typeof partySchema>;
 export type WorkContent = {
+  requirementsVersion?: 1;
   id: string;
   number: string;
   title: string;
@@ -122,6 +132,7 @@ export type Monitoring = {
   notes: string;
 };
 export type WeeklyPermit = {
+  requirementsVersion?: 1;
   id: string;
   number: string;
   token: string;

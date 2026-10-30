@@ -61,6 +61,34 @@ export function filledSection(role: PartyRole, confined = false) {
       riskControls: "Demarcate the area and remove trip hazards.",
       responsible: "Site supervisor",
     });
+  if (role === "Requester") {
+    data.requesterDepartment = "Maintenance";
+    data.contractors = [];
+    data.hazards = [
+      {
+        id: "risk-primary",
+        activity: data.activities[0],
+        hazard: data.hazard,
+        consequence: data.consequence,
+        affected: "Work team",
+        controls: data.riskControls,
+        responsible: data.responsible,
+        likelihood: data.likelihood,
+        severity: data.severity,
+        residualLikelihood: data.residualLikelihood,
+        residualSeverity: data.residualSeverity,
+      },
+    ];
+    if (confined)
+      data.companyRiskAssessment = {
+        reference: "PCG-CRA-001",
+        assessedBy: "Company assessor",
+        assessmentDate: "2026-10-28",
+        documentName: "company-ra.pdf",
+        completed: true,
+        activitiesKey: "Confined Space",
+      };
+  }
   if (role === "Issuer") {
     Object.assign(data, {
       ppe: ["Safety shoes", "Safety helmet"],
