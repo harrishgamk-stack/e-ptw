@@ -573,9 +573,30 @@ function SpecialFields({ form: { watch, setValue } }: FieldsProps) {
     </>
   );
 }
-export function Wizard({ editId }: { editId?: string }) {
-  const { save, transition, permits, demo, ready } = useStore(),
+export type SharedWizard = {
+  initialDraft: Draft;
+  storageKey: string;
+  revision: number | null;
+  editing: boolean;
+  onSubmit: (draft: Draft) => Promise<string>;
+};
+export function Wizard({
+  editId,
+  shared,
+}: {
+  editId?: string;
+  shared?: SharedWizard;
+}) {
+  const {
+      save,
+      transition,
+      permits,
+      demo: storeDemo,
+      ready: storeReady,
+    } = useStore(),
     router = useRouter();
+  const demo = !!shared || storeDemo,
+    ready = !!shared || storeReady;
   const [step, setStep] = useState(0),
     [id, setId] = useState(editId),
     [saving, setSaving] = useState(false),
@@ -583,14 +604,18 @@ export function Wizard({ editId }: { editId?: string }) {
     [lastSaved, setLastSaved] = useState("Not saved yet"),
     [uploading, setUploading] = useState(false);
   const idRef = useRef(editId),
-    restored = useRef(false);
+    restored = useRef(false),
+    submitted = useRef(false);
   const form = useForm<Draft>({
     resolver: zodResolver(draftSchema),
     defaultValues: emptyDraft,
   });
   const { register, watch, setValue, getValues, reset } = form;
   const data = watch();
-  const storageKey = editId ? `pcg-wizard-${editId}` : "pcg-wizard";
+  const storageKey =
+    shared?.storageKey ?? (editId ? `pcg-wizard-${editId}` : "pcg-wizard");
+  const sharedMode = !!shared,
+    sharedRevision = shared?.revision ?? null;
   useEffect(() => {
     if (ready && !restored.current) {
       const permit = editId ? permits.find((p) => p.id === editId) : undefined;
@@ -599,17 +624,22 @@ export function Wizard({ editId }: { editId?: string }) {
         try {
           const local = localStorage.getItem(storageKey);
           if (local) {
-            reset(draftSchema.parse(JSON.parse(local)));
-            recovered = true;
+            const saved = JSON.parse(local);
+            if (!shared || saved.revision === shared.revision) {
+              reset(draftSchema.parse(shared ? saved.draft : saved));
+              recovered = true;
+              if (shared) setLastSaved("Saved draft restored on this device");
+            } else setLastSaved("Permit changed. Loaded the latest work plan.");
           }
         } catch {
           /* Ignore obsolete local draft. */
         }
       }
       if (!recovered && permit?.draft) reset(permit.draft);
+      if (!recovered && shared) reset(shared.initialDraft);
       restored.current = true;
     }
-  }, [ready, editId, permits, demo, reset, storageKey]);
+  }, [ready, editId, permits, demo, reset, storageKey, shared]);
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
     // eslint-disable-next-line react-hooks/incompatible-library -- React Compiler is not enabled; RHF subscription intentionally observes draft changes.
@@ -617,8 +647,13 @@ export function Wizard({ editId }: { editId?: string }) {
       if (!restored.current) return;
       clearTimeout(timeout);
       timeout = setTimeout(() => {
-        if (demo) {
-          localStorage.setItem(storageKey, JSON.stringify(values));
+        if (demo && !submitted.current) {
+          localStorage.setItem(
+            storageKey,
+            JSON.stringify(
+              sharedMode ? { draft: values, revision: sharedRevision } : values,
+            ),
+          );
           setLastSaved("Draft autosaved on this device");
         }
       }, 700);
@@ -627,7 +662,7 @@ export function Wizard({ editId }: { editId?: string }) {
       clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [watch, demo, storageKey]);
+  }, [watch, demo, storageKey, sharedMode, sharedRevision]);
   const toggle = (field: "activities" | "ppe" | "controls", value: string) => {
     const current = getValues(field);
     setValue(
@@ -642,6 +677,16 @@ export function Wizard({ editId }: { editId?: string }) {
     setSaving(true);
     setError("");
     try {
+      if (shared) {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({ draft: getValues(), revision: shared.revision }),
+        );
+        setLastSaved(
+          "Draft saved on this device. Continue when ready to share.",
+        );
+        return;
+      }
       const savedId = await save(getValues(), idRef.current);
       idRef.current = savedId;
       setId(savedId);
@@ -657,6 +702,27 @@ export function Wizard({ editId }: { editId?: string }) {
     }
   }
   async function submit() {
+    if (shared) {
+      setSaving(true);
+      setError("");
+      try {
+        if (!getValues("confirmed"))
+          throw new Error(
+            "Confirm the work plan before creating the shared permit.",
+          );
+        const permitId = await shared.onSubmit(getValues());
+        submitted.current = true;
+        localStorage.removeItem(storageKey);
+        router.push(`/work/${permitId}`);
+      } catch (e) {
+        setError(
+          e instanceof Error ? e.message : "Unable to save the shared permit.",
+        );
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
     const issues = submissionIssues(getValues());
     if (issues.length) {
       setError(issues.join("\n"));
@@ -722,14 +788,22 @@ export function Wizard({ editId }: { editId?: string }) {
   }
   return (
     <>
-      <Link className="back-link" href="/permits">
+      <Link className="back-link" href={shared ? "/" : "/permits"}>
         <ChevronLeft size={14} />
-        Back to permits
+        {shared ? "My permit" : "Back to permits"}
       </Link>
       <div className="page-intro heading-row">
         <div>
-          <h1>{editId ? "Edit permit" : "Create a new permit"}</h1>
+          <h1>
+            {editId || shared?.editing ? "Edit permit" : "Create a new permit"}
+          </h1>
           <p>Plan the work. Identify the risks. Put safety first.</p>
+          {shared && (
+            <p>
+              Choose up to seven calendar days. Planned times use Malaysia time.
+              Share the QR after creating the work plan.
+            </p>
+          )}
         </div>
         <span className="saved-state">
           <CloudCheck size={15} />
@@ -749,8 +823,9 @@ export function Wizard({ editId }: { editId?: string }) {
             </button>
           ))}
           <p className="wizard-hint">
-            Your work can be saved at every step. Submission requires complete
-            safety information.
+            {shared
+              ? "Save a draft at any step. After creation, share the QR so all three parties can review, complete their sections and sign."
+              : "Your work can be saved at every step. Submission requires complete safety information."}
           </p>
         </aside>
         <section className="panel wizard-content">
@@ -766,7 +841,9 @@ export function Wizard({ editId }: { editId?: string }) {
                 "Confirm the protective equipment and site controls.",
                 "Complete the controls triggered by your work activities.",
                 "Attach the supporting evidence for safe work.",
-                "Check every detail before sending your permit for review.",
+                shared
+                  ? "Review the work plan before sharing it with the three parties."
+                  : "Check every detail before sending your permit for review.",
               ][step]
             }
           </p>
@@ -775,18 +852,20 @@ export function Wizard({ editId }: { editId?: string }) {
           {step === 2 && (
             <>
               <div className="activity-choices">
-                {activities.map((a) => (
-                  <button
-                    type="button"
-                    className={`activity-choice ${data.activities.includes(a) ? "chosen" : ""}`}
-                    key={a}
-                    onClick={() => toggle("activities", a)}
-                  >
-                    <TypeIcon type={a} />
-                    {a}
-                    {data.activities.includes(a) && <Check size={13} />}
-                  </button>
-                ))}
+                {(shared ? ["General work", ...activities] : activities).map(
+                  (a) => (
+                    <button
+                      type="button"
+                      className={`activity-choice ${data.activities.includes(a) ? "chosen" : ""}`}
+                      key={a}
+                      onClick={() => toggle("activities", a)}
+                    >
+                      <TypeIcon type={a} />
+                      {a}
+                      {data.activities.includes(a) && <Check size={13} />}
+                    </button>
+                  ),
+                )}
               </div>
               <div className="inline-notice" style={{ marginTop: 22 }}>
                 <ShieldCheck size={17} />
@@ -825,6 +904,14 @@ export function Wizard({ editId }: { editId?: string }) {
                 ))}
               </div>
               <div style={{ marginTop: 24 }}>
+                {shared && (
+                  <Field label="Emergency / rescue arrangements">
+                    <textarea
+                      {...register("special.emergencyPlan")}
+                      placeholder="Emergency contacts, assembly point and rescue arrangements."
+                    />
+                  </Field>
+                )}
                 <Field label="Toolbox meeting">
                   <select {...register("toolbox")}>
                     <option>Not required</option>
@@ -840,9 +927,11 @@ export function Wizard({ editId }: { editId?: string }) {
             <>
               <div className="inline-notice">
                 <FileUp size={17} />
-                {demo
-                  ? "Demo mode retains document names only. File contents are uploaded to private Supabase Storage after connection."
-                  : "Documents are stored privately. Access requires permit authorization."}
+                {shared
+                  ? "Local demo: document names, types and expiry dates are retained. File contents are not uploaded or shared."
+                  : demo
+                    ? "Demo mode retains document names only. File contents are uploaded to private Supabase Storage after connection."
+                    : "Documents are stored privately. Access requires permit authorization."}
               </div>
               <Field label="Upload documents (PDF or images, up to 10 MB each)">
                 <input
@@ -933,16 +1022,26 @@ export function Wizard({ editId }: { editId?: string }) {
                   <p>{value || "Not provided"}</p>
                 </div>
               ))}
-              {submissionIssues({ ...data, confirmed: true }).length > 0 && (
-                <div className="error-message">
-                  <strong>Requirements to resolve</strong>
-                  <ul style={{ paddingLeft: 18 }}>
-                    {submissionIssues({ ...data, confirmed: true }).map(
-                      (issue) => (
-                        <li key={issue}>{issue}</li>
-                      ),
-                    )}
-                  </ul>
+              {!shared &&
+                submissionIssues({ ...data, confirmed: true }).length > 0 && (
+                  <div className="error-message">
+                    <strong>Requirements to resolve</strong>
+                    <ul style={{ paddingLeft: 18 }}>
+                      {submissionIssues({ ...data, confirmed: true }).map(
+                        (issue) => (
+                          <li key={issue}>{issue}</li>
+                        ),
+                      )}
+                    </ul>
+                  </div>
+                )}
+              {shared && (
+                <div className="inline-notice">
+                  <ShieldCheck size={17} />
+                  Creating the permit does not approve work or sign for anyone.
+                  Each party must review and sign, then HSE reviews and
+                  activates it. Incomplete safety details can be completed
+                  through the shared QR.
                 </div>
               )}
               <label className="check" style={{ marginTop: 20 }}>
@@ -1003,7 +1102,11 @@ export function Wizard({ editId }: { editId?: string }) {
                   disabled={saving || uploading}
                   onClick={submit}
                 >
-                  Submit permit
+                  {shared
+                    ? shared.editing
+                      ? "Save updated work plan"
+                      : "Create & get QR"
+                    : "Submit permit"}
                   <ArrowRight size={14} />
                 </button>
               )}

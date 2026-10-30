@@ -2,20 +2,15 @@
 import { useState } from "react";
 import { Check, Save } from "lucide-react";
 import { Field } from "@/components/ui";
-import { ppeOptions, safetyControls, specialControls } from "@/lib/domain";
+import {
+  activities,
+  ppeOptions,
+  safetyControls,
+  specialControls,
+} from "@/lib/domain";
 import { PartyData, PartyRole, WeeklyPermit } from "./model";
 import { useWeekly } from "./store";
-const activityOptions = [
-  "General work",
-  "Mechanical work",
-  "Electrical work",
-  "Hot Work",
-  "Confined Space",
-  "Working at height",
-  "Hoisting / lifting",
-  "Environmental impact",
-  "Other",
-];
+const activityOptions = ["General work", ...activities];
 export function SectionForm({
   permit,
   role,

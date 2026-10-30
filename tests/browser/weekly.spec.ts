@@ -31,10 +31,23 @@ test("four separate tabs collaborate, HSE activates once, and the Holder signs t
   page.on("pageerror", (e) => errors.push(e.message));
   await signIn(page, "Issuer");
   await page.getByRole("link", { name: "Create permit", exact: true }).click();
+  await page.getByLabel("Work title").fill("Weekly warehouse ventilation work");
+  await page.getByLabel("Work location").selectOption("Warehouse A");
   await page
-    .getByLabel("What work is planned?")
-    .fill("Weekly warehouse ventilation work");
-  await page.getByLabel("Work location").fill("Warehouse A");
+    .getByLabel("Description of work")
+    .fill(
+      "Inspect and service the ventilation equipment within the approved work area.",
+    );
+  await page
+    .getByRole("button", { name: "3 Work Activities", exact: true })
+    .click();
+  await page.getByRole("button", { name: "General work", exact: true }).click();
+  await page
+    .getByRole("button", { name: "8 Review & Submit", exact: true })
+    .click();
+  await page
+    .getByRole("checkbox", { name: /I confirm that the information provided/ })
+    .check();
   await page.getByRole("button", { name: "Create & get QR" }).click();
   await expect(page).toHaveURL(/\/work\//);
   let shared = await data(page);

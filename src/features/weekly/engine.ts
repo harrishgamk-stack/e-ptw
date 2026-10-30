@@ -1,5 +1,15 @@
 import { canonicalJson, digest } from "@/lib/acknowledgement";
-import { safetyControls, specialControls } from "@/lib/domain";
+import {
+  Draft,
+  hazardSchema,
+  safetyControls,
+  specialControls,
+} from "@/lib/domain";
+import {
+  applicationInput,
+  applicationSections,
+  syncApplication,
+} from "./application";
 import {
   Approval,
   Attendance,
@@ -58,6 +68,7 @@ export function contentOf(p: WeeklyPermit): WorkContent {
     sections: Object.fromEntries(
       partyRoles.map((r) => [r, p.sections[r].data]),
     ) as Record<PartyRole, PartyData>,
+    ...(p.application ? { application: structuredClone(p.application) } : {}),
   };
 }
 function archiveSignedWork(p: WeeklyPermit, hash: string, at: string) {
@@ -143,9 +154,18 @@ export function sectionIssues(p: WeeklyPermit, role: PartyRole): string[] {
   return issues;
 }
 export function allIssues(p: WeeklyPermit) {
-  return partyRoles.flatMap((role) =>
+  const issues = partyRoles.flatMap((role) =>
     sectionIssues(p, role).map((message) => `${role}: ${message}`),
   );
+  p.application?.hazards.slice(1).forEach((h, index) => {
+    if (!hazardSchema.safeParse(h).success)
+      issues.push(`Complete hazard ${index + 2} in the detailed permit form.`);
+    if (h.residualLikelihood * h.residualSeverity >= 17)
+      issues.push(
+        `Resolve the extreme residual risk for hazard ${index + 2} before signing.`,
+      );
+  });
+  return issues;
 }
 export function currentSignatures(p: WeeklyPermit) {
   return partyRoles.every(
@@ -170,6 +190,12 @@ export function gasCurrent(p: WeeklyPermit, now: Date) {
 }
 type Command =
   | { type: "CREATE"; input: unknown }
+  | {
+      type: "UPDATE_APPLICATION";
+      permitId: string;
+      expectedRevision: number;
+      application: Draft;
+    }
   | { type: "JOIN"; token: string }
   | {
       type: "SAVE";
@@ -230,11 +256,34 @@ export async function applyWeeklyCommand(
   if (command.type === "CREATE") {
     if (!["Issuer", "Requester"].includes(actor.role))
       throw new Error("Only an Issuer or Requester can create a permit.");
-    const input = createSchema.parse(command.input),
-      start = `${input.startDay}T00:00:00+08:00`,
-      end = `${input.endDay}T23:59:59.999+08:00`;
+    const input = createSchema.parse(command.input);
+    if (input.application) {
+      const full = applicationInput(input.application);
+      if (
+        full.title.trim() !== input.title ||
+        full.location.trim() !== input.location ||
+        full.startDay !== input.startDay ||
+        full.endDay !== input.endDay
+      )
+        throw new Error(
+          "The work details must match the detailed application.",
+        );
+    }
+    const start = input.application
+        ? `${input.application.start}:00+08:00`
+        : `${input.startDay}T00:00:00+08:00`,
+      end = input.application
+        ? `${input.application.end}:00+08:00`
+        : `${input.endDay}T23:59:59.999+08:00`;
     const duration = new Date(end).getTime() - new Date(start).getTime();
-    if (duration < 0 || duration >= 7 * 86400000 || new Date(end) <= now)
+    if (
+      !Number.isFinite(duration) ||
+      duration <= 0 ||
+      duration >= 7 * 86400000 ||
+      new Date(input.endDay).getTime() - new Date(input.startDay).getTime() >
+        6 * 86400000 ||
+      new Date(end) <= now
+    )
       throw new Error(
         "Choose a current or future period of up to seven calendar days.",
       );
@@ -280,7 +329,14 @@ export async function applyWeeklyCommand(
       attendanceAfter: null,
       monitoring: [],
       suspensionReason: null,
+      ...(input.application
+        ? { application: structuredClone(input.application) }
+        : {}),
     };
+    if (p.application) {
+      const sections = applicationSections(p.application);
+      for (const role of partyRoles) p.sections[role].data = sections[role];
+    }
     state.permits.unshift(p);
     audit(p, "PERMIT_CREATED", "Shared permit opened for the three parties.");
     return { state, permit: p };
@@ -325,6 +381,49 @@ export async function applyWeeklyCommand(
     throw new Error(
       "This permit is expired or closed. Work and signing are blocked.",
     );
+  if (command.type === "UPDATE_APPLICATION") {
+    if (
+      p.createdBy !== actor.id ||
+      !["Requester", "Issuer"].includes(actor.role)
+    )
+      throw new Error(
+        "Only the permit creator can edit the detailed work plan.",
+      );
+    if (!["COLLECTING", "HSE_REVIEW"].includes(status))
+      throw new Error(
+        "Ask HSE to return the permit before changing the detailed work plan.",
+      );
+    if (p.revision !== command.expectedRevision)
+      throw new Error(
+        "The permit changed in another tab. Reopen the detailed form before saving.",
+      );
+    const input = applicationInput(command.application);
+    // Reuse creation validation without granting another signing role or changing the shared QR.
+    const validated = (
+      await applyWeeklyCommand(source, actor.id, { type: "CREATE", input }, now)
+    ).permit;
+    p.title = validated.title;
+    p.location = validated.location;
+    p.start = validated.start;
+    p.end = validated.end;
+    p.application = validated.application;
+    for (const role of partyRoles) {
+      p.sections[role].data = validated.sections[role].data;
+      p.sections[role].revision++;
+      p.sections[role].savedAt = at;
+      p.sections[role].savedBy = null;
+    }
+    p.revision++;
+    p.status = "COLLECTING";
+    p.signatures = {};
+    p.approval = null;
+    audit(
+      p,
+      "APPLICATION_UPDATED",
+      "Detailed work plan updated. All parties must review and sign the new revision.",
+    );
+    return { state, permit: p };
+  }
   if (command.type === "SAVE") {
     if (!["COLLECTING", "HSE_REVIEW"].includes(status))
       throw new Error(
@@ -347,6 +446,7 @@ export async function applyWeeklyCommand(
     if (canonicalJson(section.data) === canonicalJson(data))
       return { state, permit: p };
     section.data = data;
+    syncApplication(p, command.role);
     section.revision++;
     section.savedAt = at;
     section.savedBy = actor.id;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Draft, draftSchema } from "@/lib/domain";
 
 export const partyRoles = ["Requester", "Issuer", "Holder"] as const;
 export type PartyRole = (typeof partyRoles)[number];
@@ -45,6 +46,7 @@ export type WorkContent = {
   revision: number;
   members: Partial<Record<PartyRole, string>>;
   sections: Record<PartyRole, PartyData>;
+  application?: Draft;
 };
 export type SignedVersion = {
   revision: number;
@@ -142,6 +144,7 @@ export type WeeklyPermit = {
   attendanceAfter: string | null;
   monitoring: Monitoring[];
   suspensionReason: string | null;
+  application?: Draft;
 };
 export type WeeklyAudit = {
   id: string;
@@ -170,6 +173,7 @@ export const createSchema = z.object({
   location: z.string().trim().min(2, "Enter the work location.").max(200),
   startDay: z.iso.date(),
   endDay: z.iso.date(),
+  application: draftSchema.optional(),
 });
 export function localDay(now = new Date()): string {
   const parts = new Intl.DateTimeFormat("en-CA", {

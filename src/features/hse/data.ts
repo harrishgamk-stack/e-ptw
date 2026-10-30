@@ -20,14 +20,20 @@ export function hseData(state: WeeklyState, now: Date) {
       number: p.number,
       title: p.title,
       location: p.location,
-      department: "Site operations",
+      department: p.application?.department || "Site operations",
       contractor: p.sections.Requester.data.company,
       holder:
         state.people.find((person) => person.id === p.members.Holder)?.name ??
         "",
       type: p.sections.Requester.data.activities[0] ?? "General work",
       status: statuses[status],
-      risk: riskLevel(risk.likelihood * risk.severity),
+      risk: riskLevel(
+        Math.max(
+          risk.likelihood * risk.severity,
+          ...(p.application?.hazards.map((h) => h.likelihood * h.severity) ??
+            []),
+        ),
+      ),
       start: p.start,
       end: p.end,
       workers: p.sections.Holder.data.workerCount,

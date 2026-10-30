@@ -114,6 +114,19 @@ export function WeeklyWork({ id }: { id: string }) {
           </button>
         </div>
       </div>
+      {["COLLECTING", "HSE_REVIEW"].includes(status) &&
+        p.application &&
+        p.createdBy === actor.id && (
+          <p className="weekly-plan-edit">
+            <Link
+              className="weekly-button secondary"
+              href={`/new-permit?edit=${p.id}`}
+            >
+              Edit detailed permit form
+            </Link>
+            <span>Changes require all parties to review and sign again.</span>
+          </p>
+        )}
       <div className="weekly-flow">
         {[
           "Fill together",

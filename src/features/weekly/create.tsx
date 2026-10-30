@@ -1,126 +1,82 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ArrowLeft, ArrowRight, QrCode } from "lucide-react";
-import { Field } from "@/components/ui";
-import { addDays, localDay } from "./model";
+import { useMemo, useState } from "react";
+import { Wizard } from "@/components/wizard";
+import {
+  addDays,
+  effectiveWeeklyStatus,
+  localDay,
+  PartyRole,
+  WeeklyPermit,
+} from "./model";
+import { applicationInput, newApplication } from "./application";
 import { WeeklyFrame } from "./frame";
 import { WeeklyLogin } from "./login";
 import { useWeekly } from "./store";
-function CreateForm() {
-  const { now, command } = useWeekly(),
-    router = useRouter();
-  const [title, setTitle] = useState(""),
-    [location, setLocation] = useState(""),
-    [startDay, setStart] = useState(localDay(now)),
-    [endDay, setEnd] = useState(addDays(localDay(now), 6)),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
+
+function DetailedCreate({ permit }: { permit?: WeeklyPermit }) {
+  const { actor, now, command } = useWeekly();
+  const [initial] = useState(() => ({
+    draft: permit?.application
+      ? structuredClone(permit.application)
+      : newApplication(
+          actor!.name,
+          actor!.role as PartyRole,
+          localDay(now),
+          addDays(localDay(now), 6),
+        ),
+    revision: permit?.revision ?? null,
+  }));
+  const permitId = permit?.id;
+  const actorId = actor!.id;
+  const shared = useMemo(
+    () => ({
+      initialDraft: initial.draft,
+      revision: initial.revision,
+      editing: !!permitId,
+      storageKey: `pcg-weekly-application-${actorId}-${permitId ?? "new"}`,
+      onSubmit: async (application: typeof initial.draft) => {
+        const saved = await command(
+          permitId
+            ? {
+                type: "UPDATE_APPLICATION",
+                permitId,
+                expectedRevision: initial.revision!,
+                application,
+              }
+            : { type: "CREATE", input: applicationInput(application) },
+        );
+        return saved.id;
+      },
+    }),
+    [initial, actorId, permitId, command],
+  );
   return (
-    <div className="weekly-narrow">
-      <Link className="back-link" href="/">
-        <ArrowLeft size={14} />
-        My permit
-      </Link>
-      <div className="weekly-page-heading">
-        <div>
-          <span className="weekly-eyebrow">START THE SHARED PERMIT</span>
-          <h1>One permit for your work period.</h1>
-          <p>
-            Create it once. Share its QR so Requester, Issuer and Holder can
-            fill their own sections.
-          </p>
-        </div>
-      </div>
-      <form
-        className="weekly-card weekly-create"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setError("");
-          try {
-            const p = await command({
-              type: "CREATE",
-              input: { title, location, startDay, endDay },
-            });
-            router.push(`/work/${p.id}`);
-          } catch (e) {
-            setError(
-              e instanceof Error ? e.message : "Unable to create permit.",
-            );
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <Field label="What work is planned?" required>
-          <input
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Warehouse ventilation maintenance"
-          />
-        </Field>
-        <Field label="Work location" required>
-          <input
-            required
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Warehouse A"
-          />
-        </Field>
-        <div className="weekly-form-grid">
-          <Field label="First day" required>
-            <input
-              required
-              type="date"
-              value={startDay}
-              onChange={(e) => setStart(e.target.value)}
-            />
-          </Field>
-          <Field label="Last day" required>
-            <input
-              required
-              type="date"
-              min={startDay}
-              max={addDays(startDay, 6)}
-              value={endDay}
-              onChange={(e) => setEnd(e.target.value)}
-            />
-          </Field>
-        </div>
-        <div className="weekly-info">
-          <QrCode size={21} />
-          <p>
-            The QR stays the same throughout this period. Work can begin only
-            after all three parties sign and HSE approves.
-          </p>
-        </div>
-        {error && (
-          <div className="error-message" role="alert">
-            {error}
-          </div>
-        )}
-        <button className="weekly-button primary" disabled={busy}>
-          {busy ? "Creating…" : "Create & get QR"}
-          <ArrowRight size={17} />
-        </button>
-      </form>
+    <div className="weekly-detailed-create">
+      <Wizard shared={shared} />
     </div>
   );
 }
-export function CreateWeekly() {
-  const { actor, ready } = useWeekly();
+
+export function CreateWeekly({ editId }: { editId?: string }) {
+  const { actor, state, ready, now } = useWeekly();
+  const permit = editId
+    ? state.permits.find((p) => p.id === editId)
+    : undefined;
+  const editable =
+    !editId ||
+    !!(
+      permit?.application &&
+      permit.createdBy === actor?.id &&
+      ["COLLECTING", "HSE_REVIEW"].includes(effectiveWeeklyStatus(permit, now))
+    );
   return (
     <WeeklyFrame>
       {!ready ? (
         <div className="weekly-loading">Loading…</div>
       ) : !actor ? (
         <WeeklyLogin />
-      ) : ["Requester", "Issuer"].includes(actor.role) ? (
-        <CreateForm />
-      ) : (
+      ) : !["Requester", "Issuer"].includes(actor.role) ? (
         <div className="weekly-card weekly-empty">
           <h2>Ask an Issuer or Requester to create the permit.</h2>
           <p>Then open its QR to complete your part.</p>
@@ -128,6 +84,22 @@ export function CreateWeekly() {
             Back to my permits
           </Link>
         </div>
+      ) : !editable ? (
+        <div className="weekly-card weekly-empty">
+          <h2>This detailed work plan cannot be edited here.</h2>
+          <p>
+            Only its creator can edit it before activation. Ask HSE to return
+            approved work for changes.
+          </p>
+          <Link className="weekly-button secondary" href="/">
+            Back to my permits
+          </Link>
+        </div>
+      ) : (
+        <DetailedCreate
+          key={`${actor.id}:${editId ?? "new"}`}
+          permit={permit}
+        />
       )}
     </WeeklyFrame>
   );
