@@ -116,7 +116,7 @@
 .demo-strip {
   background: #f3eeeb;
   border-bottom: 1px solid #e5d9d2;
-  color: #6e655f;
+  color: #665d58;
 }
 .weekly-demo > span,
 .demo-strip > span:first-child {
@@ -130,15 +130,15 @@
   color: var(--brand-primary);
 }
 .weekly-login-message h1 em {
-  color: #43857e;
+  color: #346762;
 }
 .weekly-login-message > p,
 .weekly-login-message > div {
-  color: #617d75;
+  color: #4d635d;
 }
 .weekly-eyebrow,
 .eyebrow {
-  color: #617d75;
+  color: #4d635d;
 }
 .weekly-button.primary,
 .button.primary {
@@ -173,6 +173,15 @@ a:focus-visible {
 input[type="checkbox"],
 input[type="radio"] {
   accent-color: var(--brand-primary);
+}
+.field > span,
+.weekly-app .field > span {
+  color: var(--ink);
+}
+.wizard-step.current > span {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: white;
 }
 .login-brand-panel .company-logo {
   background: #fff;

@@ -15,7 +15,7 @@
 .simple-heading p {
   font-size: 14px;
   line-height: 1.8;
-  color: #869f9c;
+  color: #526160;
   margin-top: 10px;
 }
 .simple-heading .eyebrow {
@@ -43,7 +43,7 @@
 }
 .simple-start > a > svg {
   margin-left: auto;
-  color: #a0bbb8;
+  color: #536160;
   width: 16px;
 }
 .simple-step-icon {
@@ -58,16 +58,16 @@
   flex-shrink: 0;
 }
 .simple-start > a:nth-child(2) .simple-step-icon {
-  color: #7a66ae;
+  color: #665591;
   background: #f2eef9;
 }
 .simple-start > a:nth-child(3) .simple-step-icon {
-  color: #388b70;
+  color: #2b6955;
   background: #ebf6ef;
 }
 .simple-start a div > span {
   font-size: 10px;
-  color: #9cb3b0;
+  color: #556160;
 }
 .simple-start h2 {
   font-size: 15px;
@@ -75,7 +75,7 @@
 }
 .simple-start p {
   font-size: 11px;
-  color: #92a7a5;
+  color: #556160;
   line-height: 1.7;
 }
 .simple-section-heading {
@@ -90,7 +90,7 @@
 }
 .simple-section-heading p {
   font-size: 12px;
-  color: #93a9a6;
+  color: #556160;
   margin-top: 6px;
 }
 .simple-workspace .button {
@@ -107,7 +107,7 @@
   align-items: center;
   gap: 10px;
   padding: 0 24px 20px;
-  color: #9fb8b5;
+  color: #546160;
 }
 .simple-search input {
   width: 100%;
@@ -130,7 +130,7 @@
 }
 .simple-permit-meta > a {
   font-size: 11px;
-  color: #92afac;
+  color: #516260;
 }
 .simple-permit-row h3 {
   font-size: 15px;
@@ -143,7 +143,7 @@
   gap: 18px;
   flex-wrap: wrap;
   font-size: 12px;
-  color: #91a9a6;
+  color: #546160;
   margin-top: 10px;
 }
 .simple-permit-row p span {
@@ -160,7 +160,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #8faba7;
+  color: #52625f;
   margin: 24px 2px;
 }
 .simple-bottom-note p {
@@ -173,7 +173,7 @@
   gap: 6px;
   align-items: center;
   font-size: 11px;
-  color: #67a8a0;
+  color: #3e6561;
   white-space: nowrap;
 }
 .simple-form {
@@ -199,7 +199,7 @@
 }
 .simple-form-footer p {
   font-size: 12px;
-  color: #90a7a4;
+  color: #546160;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -208,7 +208,7 @@
   display: inline-flex;
   margin-top: 20px;
   font-size: 12px;
-  color: #72b1aa;
+  color: #416561;
   line-height: 1.6;
 }
 .more-tools {
@@ -255,7 +255,7 @@
   width: 26px;
   border-radius: 50%;
   background: #effaf9;
-  color: #68ada5;
+  color: #3d6661;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -284,7 +284,7 @@
 }
 .sign-summary p {
   font-size: 12px;
-  color: #8aa5a2;
+  color: #526160;
   margin-top: 10px;
 }
 .sign-summary details {
@@ -298,7 +298,7 @@
   gap: 10px;
   cursor: pointer;
   font-size: 13px;
-  color: #68ada5;
+  color: #3d6661;
   list-style: none;
 }
 .sign-summary details[open] summary {
@@ -343,7 +343,7 @@
 .sign-demo-note {
   font-size: 11px;
   line-height: 1.8;
-  color: #9aafad;
+  color: #556160;
   margin-top: 16px;
   display: flex;
   align-items: center;
@@ -366,7 +366,7 @@
 }
 .sign-explainer > p {
   font-size: 12px;
-  color: #90aaa7;
+  color: #536160;
   margin: 12px 0 20px;
   line-height: 1.9;
 }
@@ -375,12 +375,12 @@
   align-items: flex-start;
   gap: 9px;
   font-size: 12px;
-  color: #83a09d;
+  color: #516261;
   margin: 18px 0;
   line-height: 1.7;
 }
 .sign-explainer > div > svg {
-  color: #6c9a83;
+  color: #476556;
   margin-top: 2px;
 }
 .sign-explainer-note {
@@ -394,11 +394,11 @@
 }
 .sign-explainer-note p {
   font-size: 11px;
-  color: #8aa9a5;
+  color: #506260;
   line-height: 1.8;
 }
 .sign-explainer-note svg {
-  color: #80b8b2 !important;
+  color: #466461 !important;
 }
 .signature-list-row {
   display: flex;
@@ -408,11 +408,11 @@
   border-bottom: 1px solid #eef5f4;
 }
 .signature-list-row > svg:first-child {
-  color: #80a494;
+  color: #4e635a;
 }
 .signature-list-row > svg:last-child {
   margin-left: auto;
-  color: #9fb9b6;
+  color: #546160;
 }
 .signature-list-row strong {
   font-size: 12px;
@@ -421,7 +421,7 @@
 .signature-list-row small {
   display: block;
   font-size: 10px;
-  color: #9bb2af;
+  color: #556160;
   margin-top: 5px;
 }
 .receipt-finder {
@@ -442,7 +442,7 @@
   padding: 30px;
   text-align: center;
   background: #edf8f2;
-  color: #3a8869;
+  color: #2d6951;
   border-bottom: 1px solid #deeee4;
 }
 .receipt-banner > svg {
@@ -450,7 +450,7 @@
 }
 .receipt-banner .eyebrow {
   justify-content: center;
-  color: #6f9d86;
+  color: #486556;
   font-size: 9px;
   letter-spacing: 1.3px;
 }
@@ -461,16 +461,16 @@
 }
 .receipt-banner p {
   font-size: 12px;
-  color: #7c9c8c;
+  color: #4f6359;
   line-height: 1.8;
 }
 .receipt-banner.mismatch {
   background: #fcefeb;
-  color: #b6594f;
+  color: #944840;
   border-bottom-color: #eedbd5;
 }
 .receipt-banner.mismatch p {
-  color: #b7837c;
+  color: #795652;
 }
 .receipt-body {
   padding: 28px 32px;
@@ -479,7 +479,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 10px;
-  color: #98afac;
+  color: #556160;
   letter-spacing: 0.7px;
 }
 .receipt-reference > span:last-child {
@@ -495,7 +495,7 @@
 }
 .signed-by > span {
   font-size: 11px;
-  color: #9db4b1;
+  color: #556160;
 }
 .signed-by h2 {
   font-size: 23px;
@@ -504,12 +504,12 @@
 }
 .signed-by p {
   font-size: 12px;
-  color: #8ba4a1;
+  color: #536160;
 }
 .signed-by .signature-preview {
   font-size: 36px;
   padding-bottom: 0;
-  color: #336862;
+  color: #336762;
 }
 .receipt-body .info-grid {
   border-top: 1px solid #eaf2f1;
@@ -528,7 +528,7 @@
   border-radius: 8px;
   padding: 17px;
   font-size: 12px;
-  color: #86a29f;
+  color: #516261;
   line-height: 1.9;
 }
 .receipt-check {
@@ -536,17 +536,17 @@
   align-items: flex-start;
   gap: 12px;
   margin: 22px 0;
-  color: #5a9a7d;
+  color: #3c6754;
 }
 .receipt-check strong {
   font-size: 13px;
   font-weight: 500;
 }
 .receipt-check.mismatch {
-  color: #ba544a;
+  color: #99453d;
 }
 .receipt-check.changed {
-  color: #a78035;
+  color: #765a25;
   background: #fffbf0;
   border: 1px solid #f0e5c9;
   padding: 15px;
@@ -554,7 +554,7 @@
 }
 .receipt-check p {
   font-size: 12px;
-  color: #90aaa7;
+  color: #536160;
   line-height: 1.8;
   margin-top: 6px;
 }
@@ -569,11 +569,11 @@
   padding: 16px 0;
   border-block: 1px solid #ecf3f2;
   font-size: 11px;
-  color: #93aca9;
+  color: #536160;
 }
 .receipt-current-status > a {
   margin-left: auto;
-  color: #74afa8;
+  color: #436561;
 }
 .receipt-qr-row {
   display: flex;
@@ -586,7 +586,7 @@
 }
 .receipt-qr-row p {
   font-size: 11px;
-  color: #9cb1af;
+  color: #556160;
   margin: 7px 0 10px;
   line-height: 1.8;
 }
@@ -595,7 +595,7 @@
 }
 .receipt-technical {
   font-size: 11px;
-  color: #9db4b2;
+  color: #556160;
   padding: 15px 0;
   border-top: 1px solid #eef5f4;
   line-height: 1.8;
@@ -868,7 +868,7 @@
     align-items: center;
     gap: 5px;
     font-size: 8px;
-    color: #86a4a1;
+    color: #506261;
     min-width: 46px;
     padding: 0;
   }
